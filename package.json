@@ -1,0 +1,16 @@
+{
+  "name": "discord-system",
+  "version": "2.0.0",
+  "description": "Bot de economía (Maricoins) para el servidor The Clock",
+  "main": "src/bot.js",
+  "scripts": {
+    "start": "node src/bot.js"
+  },
+  "license": "MIT",
+  "private": true,
+  "dependencies": {
+    "discord.js": "^14.26.4",
+    "dotenv": "^16.6.1",
+    "mongoose": "^8.24.1"
+  }
+}
