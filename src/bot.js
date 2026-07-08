@@ -1,3 +1,16 @@
+// 1. IMPORTACIONES Y SERVIDOR EXPRESS 
+const express = require('express');
+const app = express();
+const port = 3000;
+
+app.get('/', (req, res) => {
+    res.send('El bot está vivo y funcionando correctamente.');
+});
+
+app.listen(port, () => {
+    console.log(`Servidor de mantenimiento activo en el puerto ${port}`);
+});
+
 // ============================================================================
 // bot.js — Punto de entrada de "System Bot"
 // Carga el .env, los comandos, los eventos, conecta la base de datos
