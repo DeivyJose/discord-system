@@ -1,0 +1,48 @@
+# THE CLOCK
+
+# Secretos
+.env
+.env.*
+!.env.example
+
+# Dependencias
+node_modules/
+
+# Compilados
+dist/
+build/
+.next/
+out/
+
+# Cache
+.cache/
+.turbo/
+.vite/
+*.tsbuildinfo
+
+# Tests
+coverage/
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+
+# Bases de datos locales
+*.sqlite
+*.sqlite3
+*.db
+
+# Backups locales
+backups/
+*.bak
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
