@@ -1,0 +1,12 @@
+{
+  "name": "@the-clock/web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Panel web de The Clock.",
+  "type": "module",
+  "scripts": {
+    "dev": "node -e \"console.log('Web pendiente de inicialización')\"",
+    "build": "node -e \"console.log('Web pendiente de inicialización')\"",
+    "typecheck": "node -e \"console.log('Web pendiente de inicialización')\""
+  }
+}
