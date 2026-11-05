@@ -28,3 +28,11 @@ export type {
 } from './entities/permission.js';
 
 export { ModuleRegistry } from './registry/moduleRegistry.js';
+
+export { COMMUNITIES } from './catalog/communities.js';
+
+export { DEPARTMENTS } from './catalog/departments.js';
+
+export { JOBS } from './catalog/jobs.js';
+
+export { PERMISSIONS } from './catalog/permissions.js';
