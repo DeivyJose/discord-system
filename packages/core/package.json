@@ -1,0 +1,11 @@
+{
+  "name": "@the-clock/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dominio central y reglas fundamentales de The Clock.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  }
+}
