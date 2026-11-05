@@ -1,0 +1,15 @@
+{
+  "name": "@the-clock/discord",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Blueprint, sincronización y adaptadores de Discord para The Clock.",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "validate:blueprint": "tsx src/blueprint/validate.ts"
+  },
+  "dependencies": {
+    "@the-clock/core": "0.1.0"
+  }
+}
