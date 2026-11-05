@@ -15,7 +15,8 @@
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "inspect:discord": "npm run inspect:guild --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",

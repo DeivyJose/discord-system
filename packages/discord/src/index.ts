@@ -18,3 +18,14 @@ export {
 export {
   DISCORD_ROLES,
 } from './blueprint/roles.js';
+
+export type {
+  DiscordChannelSnapshot,
+  DiscordGuildSnapshot,
+  DiscordRoleSnapshot,
+  PermissionOverwriteSnapshot,
+} from './inspector/types.js';
+
+export {
+  inspectGuild,
+} from './inspector/inspectGuild.js';
