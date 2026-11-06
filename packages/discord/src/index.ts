@@ -29,3 +29,20 @@ export type {
 export {
   inspectGuild,
 } from './inspector/inspectGuild.js';
+
+export type {
+  DiscordBindings,
+  MigrationAction,
+  MigrationConfidence,
+  MigrationPlan,
+  MigrationPlanItem,
+  MigrationResourceKind,
+} from './migration/types.js';
+
+export {
+  createMigrationPlan,
+} from './migration/planner.js';
+
+export {
+  renderMigrationPlan,
+} from './migration/report.js';
