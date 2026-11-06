@@ -9,7 +9,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "validate:blueprint": "tsx src/blueprint/validate.ts",
     "inspect:guild": "node --env-file=../../.env --import tsx src/inspector/inspect.ts",
-    "plan:migration": "tsx src/migration/plan.ts"
+    "plan:migration": "tsx src/migration/plan.ts",
+    "plan:operations": "tsx src/migration/planOperations.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

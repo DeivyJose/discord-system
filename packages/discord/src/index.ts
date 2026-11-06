@@ -46,3 +46,18 @@ export {
 export {
   renderMigrationPlan,
 } from './migration/report.js';
+
+export type {
+  MigrationOperation,
+  MigrationOperationResourceKind,
+  MigrationOperationsPlan,
+  MigrationOperationType,
+} from './migration/operationTypes.js';
+
+export {
+  createMigrationOperationsPlan,
+} from './migration/operationsPlanner.js';
+
+export {
+  renderMigrationOperationsPlan,
+} from './migration/operationsReport.js';
