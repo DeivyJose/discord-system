@@ -12,7 +12,8 @@
     "plan:migration": "tsx src/migration/plan.ts",
     "plan:operations": "tsx src/migration/planOperations.ts",
     "preview:execution": "tsx src/migration/previewExecution.ts",
-    "preflight:migration": "node --env-file=../../.env --import tsx src/migration/runPreflight.ts"
+    "preflight:migration": "node --env-file=../../.env --import tsx src/migration/runPreflight.ts",
+    "plan:hierarchy": "tsx src/migration/planHierarchyBootstrap.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

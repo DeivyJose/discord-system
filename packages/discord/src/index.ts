@@ -93,3 +93,20 @@ export {
 export {
   renderDiscordMigrationPreflight,
 } from './migration/preflightReport.js';
+
+export type {
+  HierarchyBootstrapAction,
+  HierarchyBootstrapCheck,
+  HierarchyBootstrapManualStep,
+  HierarchyBootstrapPlan,
+  HierarchyBootstrapRole,
+  HierarchyBootstrapStatus,
+} from './migration/hierarchyBootstrapTypes.js';
+
+export {
+  createHierarchyBootstrapPlan,
+} from './migration/hierarchyBootstrap.js';
+
+export {
+  renderHierarchyBootstrapPlan,
+} from './migration/hierarchyBootstrapReport.js';
