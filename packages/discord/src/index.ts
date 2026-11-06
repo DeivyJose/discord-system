@@ -110,3 +110,17 @@ export {
 export {
   renderHierarchyBootstrapPlan,
 } from './migration/hierarchyBootstrapReport.js';
+
+export type {
+  MigrationGate,
+  MigrationGateCheck,
+  MigrationGateCheckStatus,
+} from './migration/migrationGateTypes.js';
+
+export {
+  createMigrationGate,
+} from './migration/migrationGate.js';
+
+export {
+  renderMigrationGate,
+} from './migration/migrationGateReport.js';
