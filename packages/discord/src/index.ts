@@ -61,3 +61,35 @@ export {
 export {
   renderMigrationOperationsPlan,
 } from './migration/operationsReport.js';
+
+export type {
+  DiscordExecutionPreview,
+  ExecutionPhase,
+  ExecutionPrecondition,
+  ExecutionPreconditionStatus,
+  ExecutionPreviewStep,
+  ExecutionStepStatus,
+} from './migration/executionTypes.js';
+
+export {
+  createExecutionPreview,
+} from './migration/executionPreview.js';
+
+export {
+  renderExecutionPreview,
+} from './migration/executionReport.js';
+
+export type {
+  DiscordMigrationPreflight,
+  PreflightCheck,
+  PreflightCheckStatus,
+  RoleHierarchyCheck,
+} from './migration/preflightTypes.js';
+
+export {
+  createDiscordMigrationPreflight,
+} from './migration/preflight.js';
+
+export {
+  renderDiscordMigrationPreflight,
+} from './migration/preflightReport.js';

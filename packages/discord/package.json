@@ -10,7 +10,9 @@
     "validate:blueprint": "tsx src/blueprint/validate.ts",
     "inspect:guild": "node --env-file=../../.env --import tsx src/inspector/inspect.ts",
     "plan:migration": "tsx src/migration/plan.ts",
-    "plan:operations": "tsx src/migration/planOperations.ts"
+    "plan:operations": "tsx src/migration/planOperations.ts",
+    "preview:execution": "tsx src/migration/previewExecution.ts",
+    "preflight:migration": "node --env-file=../../.env --import tsx src/migration/runPreflight.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

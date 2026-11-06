@@ -211,7 +211,9 @@ export function createMigrationOperationsPlan(
         desiredParentBlueprintId:
           channel.parentId,
 
-        desiredParentActualId,
+        ...(desiredParentActualId
+          ? { desiredParentActualId }
+          : {}),
 
         channelKind:
           channel.kind,

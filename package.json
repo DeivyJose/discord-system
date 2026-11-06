@@ -18,7 +18,9 @@
     "test": "npm run test --workspaces --if-present",
     "inspect:discord": "npm run inspect:guild --workspace=@the-clock/discord",
     "plan:discord": "npm run plan:migration --workspace=@the-clock/discord",
-    "plan:discord-operations": "npm run plan:operations --workspace=@the-clock/discord"
+    "plan:discord-operations": "npm run plan:operations --workspace=@the-clock/discord",
+    "preview:discord-execution": "npm run preview:execution --workspace=@the-clock/discord",
+    "preflight:discord": "npm run preflight:migration --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",
