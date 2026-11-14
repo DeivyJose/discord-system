@@ -289,3 +289,16 @@ export {
   normalizeDiscordStructureSnapshot,
   verifyLiveDrift,
 } from './migration/liveDrift.js';
+
+export type {
+  DriftProtectedPhaseBlockReason,
+  DriftProtectedPhaseCheck,
+  DriftProtectedPhaseCheckStatus,
+  DriftProtectedPhaseOptions,
+  DriftProtectedPhaseResult,
+  DriftProtectedPhaseStatus,
+} from './migration/driftProtectedPhaseTypes.js';
+
+export {
+  runDriftProtectedPhase,
+} from './migration/driftProtectedPhase.js';
