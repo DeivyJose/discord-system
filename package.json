@@ -28,7 +28,8 @@
     "plan:discord-execution-session": "npm run plan:execution-session --workspace=@the-clock/discord",
     "dry-run:discord-phase": "npm run dry-run:phase --workspace=@the-clock/discord --",
     "replay:discord-fake-execution": "npm run replay:fake-execution --workspace=@the-clock/discord",
-    "test:discord-execution-checkpoint": "npm run test:execution-checkpoint --workspace=@the-clock/discord"
+    "test:discord-execution-checkpoint": "npm run test:execution-checkpoint --workspace=@the-clock/discord",
+    "test:discord-checkpoint-integrity": "npm run test:checkpoint-integrity --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",

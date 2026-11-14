@@ -231,3 +231,16 @@ export type {
 export {
   executeWithJournal,
 } from './migration/executionJournal.js';
+
+export type {
+  BoundExecutionCheckpoint,
+  CheckpointIntegrityCheck,
+  CheckpointIntegrityCheckStatus,
+  CheckpointIntegrityContext,
+  CheckpointIntegrityVerification,
+} from './migration/checkpointIntegrityTypes.js';
+
+export {
+  sealExecutionCheckpoint,
+  verifyExecutionCheckpointIntegrity,
+} from './migration/checkpointIntegrity.js';
