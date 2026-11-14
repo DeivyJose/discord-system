@@ -139,3 +139,18 @@ export {
 export {
   renderConfirmationManifest,
 } from './migration/confirmationManifestReport.js';
+
+export type {
+  ApprovalReceipt,
+  ConfirmationVerificationCheck,
+  ConfirmationVerificationCheckStatus,
+  ConfirmationVerificationStatus,
+} from './migration/approvalReceiptTypes.js';
+
+export {
+  verifyConfirmationManifest,
+} from './migration/confirmationVerifier.js';
+
+export {
+  renderApprovalReceipt,
+} from './migration/approvalReceiptReport.js';
