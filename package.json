@@ -24,7 +24,8 @@
     "plan:discord-hierarchy": "npm run plan:hierarchy --workspace=@the-clock/discord",
     "gate:discord-migration": "npm run gate:migration --workspace=@the-clock/discord",
     "manifest:discord-confirmation": "npm run manifest:confirmation --workspace=@the-clock/discord",
-    "verify:discord-confirmation": "npm run verify:confirmation --workspace=@the-clock/discord"
+    "verify:discord-confirmation": "npm run verify:confirmation --workspace=@the-clock/discord",
+    "plan:discord-execution-session": "npm run plan:execution-session --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",

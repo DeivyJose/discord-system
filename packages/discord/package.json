@@ -16,7 +16,8 @@
     "plan:hierarchy": "tsx src/migration/planHierarchyBootstrap.ts",
     "gate:migration": "tsx src/migration/runMigrationGate.ts",
     "manifest:confirmation": "tsx src/migration/createConfirmationManifest.ts",
-    "verify:confirmation": "tsx src/migration/verifyConfirmation.ts"
+    "verify:confirmation": "tsx src/migration/verifyConfirmation.ts",
+    "plan:execution-session": "tsx src/migration/planExecutionSession.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

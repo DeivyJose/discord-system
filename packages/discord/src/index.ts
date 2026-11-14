@@ -154,3 +154,23 @@ export {
 export {
   renderApprovalReceipt,
 } from './migration/approvalReceiptReport.js';
+
+export type {
+  ExecutionSessionCheck,
+  ExecutionSessionCheckStatus,
+  ExecutionSessionItem,
+  ExecutionSessionOperation,
+  ExecutionSessionPhase,
+  ExecutionSessionPhaseId,
+  ExecutionSessionPlan,
+  ExecutionSessionPreviewStep,
+  ExecutionSessionStatus,
+} from './migration/executionSessionTypes.js';
+
+export {
+  createExecutionSessionPlan,
+} from './migration/executionSessionPlanner.js';
+
+export {
+  renderExecutionSessionPlan,
+} from './migration/executionSessionReport.js';
