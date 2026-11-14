@@ -216,3 +216,18 @@ export {
 export {
   FakeDiscordExecutionAdapter,
 } from './migration/fakeDiscordExecutionAdapter.js';
+
+export type {
+  ExecutionCheckpoint,
+  ExecutionCheckpointStatus,
+  ExecutionJournalEntry,
+  ExecutionJournalEntryStatus,
+  ExecutionJournalHookContext,
+  ExecutionJournalRun,
+  ExecutionJournalRunnerOptions,
+  ExecutionJournalState,
+} from './migration/executionJournalTypes.js';
+
+export {
+  executeWithJournal,
+} from './migration/executionJournal.js';

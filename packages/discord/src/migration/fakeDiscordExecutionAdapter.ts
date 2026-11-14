@@ -72,6 +72,71 @@ implements DiscordExecutionAdapter {
   private readonly processedOperations =
     new Set<string>();
 
+  constructor(
+    seed?: ExecutionAdapterSnapshot,
+  ) {
+    if (
+      !seed
+    ) {
+      return;
+    }
+
+    if (
+      seed.mode !== 'fake'
+    ) {
+      throw new Error(
+        'FakeDiscordExecutionAdapter solo puede restaurar snapshots fake.',
+      );
+    }
+
+    for (
+      const resource
+      of seed.resources
+    ) {
+      this.resources.set(
+        resource.actualId,
+        {
+          ...resource,
+        },
+      );
+    }
+
+    for (
+      const [
+        blueprintId,
+        actualId,
+      ]
+      of Object.entries(
+        seed.bindings,
+      )
+    ) {
+      this.bindings.set(
+        blueprintId,
+        actualId,
+      );
+    }
+
+    for (
+      const action
+      of seed.actions
+    ) {
+      this.actions.push({
+        ...action,
+
+        binding:
+          action.binding
+            ? {
+                ...action.binding,
+              }
+            : null,
+      });
+
+      this.processedOperations.add(
+        action.operationId,
+      );
+    }
+  }
+
   private fakeId(
     operation: MigrationOperation,
   ): string {

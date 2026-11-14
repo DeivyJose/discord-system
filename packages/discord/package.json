@@ -19,7 +19,8 @@
     "verify:confirmation": "tsx src/migration/verifyConfirmation.ts",
     "plan:execution-session": "tsx src/migration/planExecutionSession.ts",
     "dry-run:phase": "tsx src/migration/dryRunExecutionPhase.ts",
-    "replay:fake-execution": "tsx src/migration/replayFakeExecution.ts"
+    "replay:fake-execution": "tsx src/migration/replayFakeExecution.ts",
+    "test:execution-checkpoint": "tsx src/migration/testExecutionCheckpoint.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",
