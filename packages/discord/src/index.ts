@@ -174,3 +174,19 @@ export {
 export {
   renderExecutionSessionPlan,
 } from './migration/executionSessionReport.js';
+
+export type {
+  PhaseDryRunCheck,
+  PhaseDryRunCheckStatus,
+  PhaseDryRunIntent,
+  PhaseDryRunPlan,
+  PhaseDryRunStatus,
+} from './migration/phaseDryRunTypes.js';
+
+export {
+  createPhaseDryRunPlan,
+} from './migration/phaseDryRunPlanner.js';
+
+export {
+  renderPhaseDryRunPlan,
+} from './migration/phaseDryRunReport.js';
