@@ -30,7 +30,8 @@
     "replay:discord-fake-execution": "npm run replay:fake-execution --workspace=@the-clock/discord",
     "test:discord-execution-checkpoint": "npm run test:execution-checkpoint --workspace=@the-clock/discord",
     "test:discord-checkpoint-integrity": "npm run test:checkpoint-integrity --workspace=@the-clock/discord",
-    "test:discord-verified-resume": "npm run test:verified-resume --workspace=@the-clock/discord"
+    "test:discord-verified-resume": "npm run test:verified-resume --workspace=@the-clock/discord",
+    "test:discord-phase-transaction": "npm run test:phase-transaction --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",

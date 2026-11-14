@@ -22,7 +22,8 @@
     "replay:fake-execution": "tsx src/migration/replayFakeExecution.ts",
     "test:execution-checkpoint": "tsx src/migration/testExecutionCheckpoint.ts",
     "test:checkpoint-integrity": "tsx src/migration/testCheckpointIntegrity.ts",
-    "test:verified-resume": "tsx src/migration/testVerifiedResume.ts"
+    "test:verified-resume": "tsx src/migration/testVerifiedResume.ts",
+    "test:phase-transaction": "tsx src/migration/testPhaseTransaction.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

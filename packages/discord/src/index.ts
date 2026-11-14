@@ -257,3 +257,16 @@ export type {
 export {
   verifiedResumeExecution,
 } from './migration/verifiedResume.js';
+
+export type {
+  PhaseTransactionBlockReason,
+  PhaseTransactionCheck,
+  PhaseTransactionCheckStatus,
+  PhaseTransactionOptions,
+  PhaseTransactionResult,
+  PhaseTransactionStatus,
+} from './migration/phaseTransactionTypes.js';
+
+export {
+  runExecutionPhaseTransaction,
+} from './migration/phaseTransaction.js';
