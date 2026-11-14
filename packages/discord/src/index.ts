@@ -270,3 +270,22 @@ export type {
 export {
   runExecutionPhaseTransaction,
 } from './migration/phaseTransaction.js';
+
+export type {
+  DiscordStructureResourceKind,
+  LiveDriftBaseline,
+  LiveDriftChange,
+  LiveDriftChangeType,
+  LiveDriftCheck,
+  LiveDriftCheckStatus,
+  LiveDriftContext,
+  LiveDriftVerification,
+  NormalizedDiscordStructureResource,
+  NormalizedDiscordStructureSnapshot,
+} from './migration/liveDriftTypes.js';
+
+export {
+  createLiveDriftBaseline,
+  normalizeDiscordStructureSnapshot,
+  verifyLiveDrift,
+} from './migration/liveDrift.js';
