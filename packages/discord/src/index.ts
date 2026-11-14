@@ -244,3 +244,16 @@ export {
   sealExecutionCheckpoint,
   verifyExecutionCheckpointIntegrity,
 } from './migration/checkpointIntegrity.js';
+
+export type {
+  VerifiedResumeBlockReason,
+  VerifiedResumeCheck,
+  VerifiedResumeCheckStatus,
+  VerifiedResumeOptions,
+  VerifiedResumeResult,
+  VerifiedResumeStatus,
+} from './migration/verifiedResumeTypes.js';
+
+export {
+  verifiedResumeExecution,
+} from './migration/verifiedResume.js';
