@@ -190,3 +190,29 @@ export {
 export {
   renderPhaseDryRunPlan,
 } from './migration/phaseDryRunReport.js';
+
+export type {
+  AutomatableMigrationOperation,
+  AutomatableOperationType,
+  CreateCategoryOperation,
+  CreateChannelOperation,
+  CreateRoleOperation,
+  DiscordExecutionAdapter,
+  ExecutionAdapterActionResult,
+  ExecutionAdapterBinding,
+  ExecutionAdapterResourceState,
+  ExecutionAdapterSnapshot,
+MoveChannelOperation,
+  RenameCategoryOperation,
+  RenameChannelOperation,
+  RenameRoleOperation,
+} from './migration/executionAdapterTypes.js';
+
+export {
+  dispatchExecutionOperation,
+  isAutomatableOperation,
+} from './migration/executionAdapter.js';
+
+export {
+  FakeDiscordExecutionAdapter,
+} from './migration/fakeDiscordExecutionAdapter.js';

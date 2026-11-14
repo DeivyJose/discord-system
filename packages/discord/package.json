@@ -18,7 +18,8 @@
     "manifest:confirmation": "tsx src/migration/createConfirmationManifest.ts",
     "verify:confirmation": "tsx src/migration/verifyConfirmation.ts",
     "plan:execution-session": "tsx src/migration/planExecutionSession.ts",
-    "dry-run:phase": "tsx src/migration/dryRunExecutionPhase.ts"
+    "dry-run:phase": "tsx src/migration/dryRunExecutionPhase.ts",
+    "replay:fake-execution": "tsx src/migration/replayFakeExecution.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",
