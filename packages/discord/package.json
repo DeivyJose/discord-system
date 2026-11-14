@@ -14,7 +14,8 @@
     "preview:execution": "tsx src/migration/previewExecution.ts",
     "preflight:migration": "node --env-file=../../.env --import tsx src/migration/runPreflight.ts",
     "plan:hierarchy": "tsx src/migration/planHierarchyBootstrap.ts",
-    "gate:migration": "tsx src/migration/runMigrationGate.ts"
+    "gate:migration": "tsx src/migration/runMigrationGate.ts",
+    "manifest:confirmation": "tsx src/migration/createConfirmationManifest.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

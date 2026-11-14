@@ -124,3 +124,18 @@ export {
 export {
   renderMigrationGate,
 } from './migration/migrationGateReport.js';
+
+export type {
+  ConfirmationManifest,
+  ConfirmationManifestCheck,
+  ConfirmationManifestCheckStatus,
+  ConfirmationManifestStatus,
+} from './migration/confirmationManifestTypes.js';
+
+export {
+  createConfirmationManifest,
+} from './migration/confirmationManifest.js';
+
+export {
+  renderConfirmationManifest,
+} from './migration/confirmationManifestReport.js';
