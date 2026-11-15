@@ -356,3 +356,12 @@ export {
   SessionBindingRegistryError,
   SessionBindingTransaction,
 } from './migration/sessionBindingRegistry.js';
+
+export type {
+  BindingAwarePreparedOperation,
+} from './migration/bindingAwareExecutionTypes.js';
+
+export {
+  BindingAwareExecutionError,
+  prepareBindingAwareOperation,
+} from './migration/bindingAwareExecution.js';
