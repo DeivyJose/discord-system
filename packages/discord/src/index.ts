@@ -117,8 +117,13 @@ export type {
   MigrationGateCheckStatus,
 } from './migration/migrationGateTypes.js';
 
+export type {
+  MigrationGateFingerprintInput,
+} from './migration/migrationGate.js';
+
 export {
   createMigrationGate,
+  createMigrationGateContentFingerprint,
 } from './migration/migrationGate.js';
 
 export {

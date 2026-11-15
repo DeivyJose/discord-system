@@ -34,7 +34,7 @@ import type {
 const MAXIMUM_SNAPSHOT_AGE_MINUTES =
   30;
 
-interface MigrationGateInput {
+export interface MigrationGateFingerprintInput {
   snapshot: DiscordGuildSnapshot;
 
   bindings: DiscordBindings;
@@ -58,63 +58,144 @@ function countStatus(
   ).length;
 }
 
-function createFingerprint(
-  input: MigrationGateInput,
+/*
+ * Canonicalización recursiva:
+ *
+ * - las claves de objetos se ordenan;
+ * - los arrays conservan su orden exacto.
+ *
+ * Esto evita que un simple cambio en el orden
+ * de propiedades JSON cambie el fingerprint,
+ * pero mantiene sensibles al orden operaciones,
+ * steps, roles, canales, permisos, etc.
+ */
+function canonicalize(
+  value: unknown,
+): unknown {
+  if (
+    Array.isArray(
+      value,
+    )
+  ) {
+    return value.map(
+      canonicalize,
+    );
+  }
+
+  if (
+    typeof value ===
+      'object' &&
+    value !== null
+  ) {
+    const source =
+      value as
+        Record<string, unknown>;
+
+    const output:
+      Record<string, unknown> =
+      {};
+
+    for (
+      const key
+      of Object.keys(
+        source,
+      ).sort()
+    ) {
+      output[key] =
+        canonicalize(
+          source[key],
+        );
+    }
+
+    return output;
+  }
+
+  return value;
+}
+
+function canonicalJson(
+  value: unknown,
+): string {
+  return JSON.stringify(
+    canonicalize(
+      value,
+    ),
+  );
+}
+
+/*
+ * Migration Gate Content Fingerprint v2
+ *
+ * Sella exactamente los seis artefactos
+ * que hoy recibe createMigrationGate().
+ *
+ * No se incorpora todavía un fingerprint
+ * independiente del Blueprint porque dicho
+ * artefacto aún no forma parte de esta API.
+ */
+export function createMigrationGateContentFingerprint(
+  input:
+    MigrationGateFingerprintInput,
 ): string {
   const payload = {
-    guildId:
-      input.snapshot.guild.id,
+    fingerprintVersion: 2,
 
-    snapshotCapturedAt:
-      input.snapshot.capturedAt,
+    snapshot:
+      input.snapshot,
 
     bindings:
-      Object.entries(
-        input.bindings.resources,
-      ).sort(
-        ([a], [b]) =>
-          a.localeCompare(b),
-      ),
+      input.bindings,
 
     operations:
-      input.operations.operations,
+      input.operations,
 
-    preflight: {
-      checkedAt:
-        input.preflight.checkedAt,
+    executionPreview:
+      input.executionPreview,
 
-      bot:
-        input.preflight.bot,
+    preflight:
+      input.preflight,
 
-      requirements:
-        input.preflight.requirements,
+    hierarchy:
+      input.hierarchy,
 
-      summary:
-        input.preflight.summary,
-    },
+    executionBoundary: {
+      gateExecutionAllowed:
+        false,
 
-    hierarchy: {
-      desiredHierarchy:
-        input.hierarchy.desiredHierarchy,
+      previewDryRunOnly:
+        input.executionPreview
+          .dryRunOnly,
 
-      roles:
-        input.hierarchy.roles,
+      previewExecutionAllowed:
+        input.executionPreview
+          .executionAllowed,
 
-      summary:
-        input.hierarchy.summary,
+      preflightExecutionAllowed:
+        input.preflight
+          .executionAllowed,
+
+      hierarchyExecutionAllowed:
+        input.hierarchy
+          .executionAllowed,
     },
   };
 
-  return createHash('sha256')
+  return createHash(
+    'sha256',
+  )
     .update(
-      JSON.stringify(payload),
+      canonicalJson(
+        payload,
+      ),
       'utf8',
     )
-    .digest('hex');
+    .digest(
+      'hex',
+    );
 }
 
 export function createMigrationGate(
-  input: MigrationGateInput,
+  input: MigrationGateFingerprintInput,
   now = new Date(),
 ): MigrationGate {
   const checks: MigrationGateCheck[] = [];
@@ -414,7 +495,7 @@ export function createMigrationGate(
     );
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
 
     generatedAt:
       now.toISOString(),
@@ -424,8 +505,13 @@ export function createMigrationGate(
       name: input.snapshot.guild.name,
     },
 
+    fingerprintVersion:
+      2,
+
     fingerprint:
-      createFingerprint(input),
+      createMigrationGateContentFingerprint(
+        input,
+      ),
 
     snapshot: {
       capturedAt:

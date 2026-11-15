@@ -14,7 +14,7 @@ export interface MigrationGateCheck {
 }
 
 export interface MigrationGate {
-  schemaVersion: 1;
+  schemaVersion: 2;
 
   generatedAt: string;
 
@@ -22,6 +22,13 @@ export interface MigrationGate {
     id: string;
     name: string;
   };
+
+  /**
+   * Versión del algoritmo/payload utilizado
+   * para ligar criptográficamente el Gate
+   * con sus artefactos de entrada.
+   */
+  fingerprintVersion: 2;
 
   fingerprint: string;
 
