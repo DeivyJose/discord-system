@@ -78,7 +78,7 @@ const BLUEPRINT_RESOURCES:
       definition:
         structuredClone(
           resource,
-        ) as
+        ) as unknown as
           Record<string, unknown>,
     }),
   );

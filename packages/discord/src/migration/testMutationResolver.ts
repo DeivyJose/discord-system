@@ -272,9 +272,10 @@ const newParentUsesSessionBinding =
 /*
  * TEST 4
  *
- * Un canal en una categoría que ya
- * existía debe seguir usando el binding
- * confirmado original.
+ * Un canal cuya categoría ya existía
+ * debe conservar exactamente el actualId
+ * autorizado que quedó incorporado
+ * en la operación.
  */
 const guide =
   fullyResolved.find(
@@ -292,7 +293,7 @@ if (
   );
 }
 
-const existingParentUsesConfirmedBinding =
+const existingParentUsesAuthorizedOperationId =
   guide.request
     .resolvedParentBlueprintId ===
       'category_entry' &&
@@ -303,7 +304,7 @@ const existingParentUsesConfirmedBinding =
       ] &&
   guide.request
     .parentActualIdSource ===
-      'confirmed';
+      'operation';
 
 /*
  * TEST 5
@@ -345,7 +346,7 @@ const allResolved =
 const success =
   detectsMissingNewParents &&
   newParentUsesSessionBinding &&
-  existingParentUsesConfirmedBinding &&
+  existingParentUsesAuthorizedOperationId &&
   ownerBlueprintPreserved &&
   allResolved;
 
@@ -392,7 +393,7 @@ const result = {
 
     newParentUsesSessionBinding,
 
-    existingParentUsesConfirmedBinding,
+    existingParentUsesAuthorizedOperationId,
 
     ownerBlueprintPreserved,
 
@@ -455,7 +456,7 @@ const report = [
   '',
   `Detecta parents aún no creados: ${detectsMissingNewParents ? 'SÍ' : 'NO'}`,
   `Canal CDN usa binding de sesión: ${newParentUsesSessionBinding ? 'SÍ' : 'NO'}`,
-  `Canal guía usa binding confirmado: ${existingParentUsesConfirmedBinding ? 'SÍ' : 'NO'}`,
+  `Canal guía usa parent autorizado de la operación: ${existingParentUsesAuthorizedOperationId ? 'SÍ' : 'NO'}`,
   `Metadatos Blueprint preservados: ${ownerBlueprintPreserved ? 'SÍ' : 'NO'}`,
   '',
   `Prueba completa: ${success ? 'SÍ' : 'NO'}`,
@@ -535,7 +536,7 @@ console.log(
 );
 
 console.log(
-  `Canal guía usa binding confirmado: ${existingParentUsesConfirmedBinding ? 'SÍ' : 'NO'}`,
+  `Canal guía usa parent autorizado de la operación: ${existingParentUsesAuthorizedOperationId ? 'SÍ' : 'NO'}`,
 );
 
 console.log(
