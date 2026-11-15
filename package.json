@@ -34,7 +34,8 @@
     "test:discord-phase-transaction": "npm run test:phase-transaction --workspace=@the-clock/discord",
     "test:discord-live-drift": "npm run test:live-drift --workspace=@the-clock/discord",
     "test:discord-drift-protected-phase": "npm run test:drift-protected-phase --workspace=@the-clock/discord",
-    "test:discord-locked-real-adapter": "npm run test:locked-real-adapter --workspace=@the-clock/discord"
+    "test:discord-locked-real-adapter": "npm run test:locked-real-adapter --workspace=@the-clock/discord",
+    "test:discord-mutation-resolver": "npm run test:mutation-resolver --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",

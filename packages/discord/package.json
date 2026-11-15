@@ -26,7 +26,8 @@
     "test:phase-transaction": "tsx src/migration/testPhaseTransaction.ts",
     "test:live-drift": "tsx src/migration/testLiveDrift.ts",
     "test:drift-protected-phase": "tsx src/migration/testDriftProtectedPhase.ts",
-    "test:locked-real-adapter": "tsx src/migration/testLockedRealAdapter.ts"
+    "test:locked-real-adapter": "tsx src/migration/testLockedRealAdapter.ts",
+    "test:mutation-resolver": "tsx src/migration/testMutationResolver.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

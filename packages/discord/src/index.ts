@@ -318,3 +318,15 @@ export {
   DiscordExecutionLockedError,
   LockedRealDiscordExecutionAdapter,
 } from './migration/lockedRealDiscordExecutionAdapter.js';
+
+export type {
+  MutationBindingSource,
+  MutationResolverBindings,
+  MutationResolverResult,
+  ResolvedBlueprintResource,
+  ResolvedDiscordMutationRequest,
+} from './migration/discordMutationResolverTypes.js';
+
+export {
+  resolveDiscordMutationRequest,
+} from './migration/discordMutationResolver.js';
