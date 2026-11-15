@@ -339,3 +339,20 @@ export {
 export type {
   ResolvedLockedExecutionResult,
 } from './migration/resolvedLockedExecution.js';
+
+export type {
+  SessionBindingCommitResult,
+  SessionBindingLookup,
+  SessionBindingLookupSource,
+  SessionBindingRecord,
+  SessionBindingRegistryErrorCode,
+  SessionBindingRegistrySnapshot,
+  SessionBindingStageResult,
+  SessionBindingTransactionStatus,
+} from './migration/sessionBindingRegistryTypes.js';
+
+export {
+  SessionBindingRegistry,
+  SessionBindingRegistryError,
+  SessionBindingTransaction,
+} from './migration/sessionBindingRegistry.js';

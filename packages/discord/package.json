@@ -28,7 +28,8 @@
     "test:drift-protected-phase": "tsx src/migration/testDriftProtectedPhase.ts",
     "test:locked-real-adapter": "tsx src/migration/testLockedRealAdapter.ts",
     "test:mutation-resolver": "tsx src/migration/testMutationResolver.ts",
-    "test:resolved-locked-execution": "tsx src/migration/testResolvedLockedExecution.ts"
+    "test:resolved-locked-execution": "tsx src/migration/testResolvedLockedExecution.ts",
+    "test:session-binding-registry": "tsx src/migration/testSessionBindingRegistry.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",
