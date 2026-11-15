@@ -302,3 +302,19 @@ export type {
 export {
   runDriftProtectedPhase,
 } from './migration/driftProtectedPhase.js';
+
+export type {
+  DiscordMutationRequest,
+  DiscordMutationRequestType,
+  DiscordMutationTransport,
+  DiscordMutationTransportResult,
+} from './migration/discordMutationRequestTypes.js';
+
+export {
+  compileDiscordMutationRequest,
+} from './migration/discordMutationRequest.js';
+
+export {
+  DiscordExecutionLockedError,
+  LockedRealDiscordExecutionAdapter,
+} from './migration/lockedRealDiscordExecutionAdapter.js';
