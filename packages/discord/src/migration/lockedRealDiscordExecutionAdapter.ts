@@ -20,6 +20,10 @@ import type {
   DiscordMutationTransport,
 } from './discordMutationRequestTypes.js';
 
+import type {
+  ResolvedDiscordMutationRequest,
+} from './discordMutationResolverTypes.js';
+
 export class DiscordExecutionLockedError
 extends Error {
   readonly code =
@@ -169,6 +173,42 @@ implements DiscordExecutionAdapter {
   ): Promise<ExecutionAdapterActionResult> {
     return this.block(
       operation,
+    );
+  }
+
+  async attemptResolvedRequest(
+    request:
+      ResolvedDiscordMutationRequest,
+  ): Promise<ExecutionAdapterActionResult> {
+    if (
+      !request.ready ||
+      request.resolverUnresolvedFields.length > 0
+    ) {
+      throw new Error(
+        [
+          'Resolved request is not ready.',
+          `Operation: ${request.operationId}.`,
+        ].join(' '),
+      );
+    }
+
+    this.blockedRequests.push(
+      structuredClone(
+        request,
+      ),
+    );
+
+    /*
+     * HARD LOCK.
+     *
+     * Incluso una request completamente
+     * resuelta termina aquí.
+     *
+     * this.transport.send(request)
+     * NO se ejecuta.
+     */
+    throw new DiscordExecutionLockedError(
+      request,
     );
   }
 

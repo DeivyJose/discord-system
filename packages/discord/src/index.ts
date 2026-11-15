@@ -330,3 +330,12 @@ export type {
 export {
   resolveDiscordMutationRequest,
 } from './migration/discordMutationResolver.js';
+
+export {
+  DiscordMutationResolutionBlockedError,
+  executeResolvedLockedMutation,
+} from './migration/resolvedLockedExecution.js';
+
+export type {
+  ResolvedLockedExecutionResult,
+} from './migration/resolvedLockedExecution.js';
