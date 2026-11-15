@@ -386,3 +386,13 @@ export {
   sealBindingAwareCheckpoint,
   verifyBindingAwareCheckpoint,
 } from './migration/checkpointedBindingResume.js';
+
+export type {
+  FullFakeMigrationPhase,
+  FullFakeMigrationPhaseResult,
+  FullFakeMigrationResult,
+} from './migration/fullFakeMigrationOrchestratorTypes.js';
+
+export {
+  runFullFakeMigration,
+} from './migration/fullFakeMigrationOrchestrator.js';
