@@ -365,3 +365,24 @@ export {
   BindingAwareExecutionError,
   prepareBindingAwareOperation,
 } from './migration/bindingAwareExecution.js';
+
+export type {
+  BindingAwareCheckpointCheck,
+  BindingAwareCheckpointCheckStatus,
+  BindingAwareCheckpointVerification,
+  BoundBindingAwareCheckpoint,
+  CheckpointedBindingPhaseOptions,
+  CheckpointedBindingPhaseResult,
+  CheckpointedBindingResumeBlockReason,
+  CheckpointedBindingResumeCheck,
+  CheckpointedBindingResumeOptions,
+  CheckpointedBindingResumeResult,
+  CheckpointedBindingResumeStatus,
+} from './migration/checkpointedBindingResumeTypes.js';
+
+export {
+  resumeCheckpointedBindingPhase,
+  runCheckpointedBindingPhase,
+  sealBindingAwareCheckpoint,
+  verifyBindingAwareCheckpoint,
+} from './migration/checkpointedBindingResume.js';

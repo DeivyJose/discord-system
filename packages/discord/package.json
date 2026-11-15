@@ -30,7 +30,8 @@
     "test:mutation-resolver": "tsx src/migration/testMutationResolver.ts",
     "test:resolved-locked-execution": "tsx src/migration/testResolvedLockedExecution.ts",
     "test:session-binding-registry": "tsx src/migration/testSessionBindingRegistry.ts",
-    "test:binding-aware-execution": "tsx src/migration/testBindingAwareExecution.ts"
+    "test:binding-aware-execution": "tsx src/migration/testBindingAwareExecution.ts",
+    "test:checkpointed-binding-resume": "tsx src/migration/testCheckpointedBindingResume.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

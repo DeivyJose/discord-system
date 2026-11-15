@@ -38,7 +38,8 @@
     "test:discord-mutation-resolver": "npm run test:mutation-resolver --workspace=@the-clock/discord",
     "test:discord-resolved-locked-execution": "npm run test:resolved-locked-execution --workspace=@the-clock/discord",
     "test:discord-session-binding-registry": "npm run test:session-binding-registry --workspace=@the-clock/discord",
-    "test:discord-binding-aware-execution": "npm run test:binding-aware-execution --workspace=@the-clock/discord"
+    "test:discord-binding-aware-execution": "npm run test:binding-aware-execution --workspace=@the-clock/discord",
+    "test:discord-checkpointed-binding-resume": "npm run test:checkpointed-binding-resume --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",
