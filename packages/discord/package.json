@@ -32,7 +32,8 @@
     "test:session-binding-registry": "tsx src/migration/testSessionBindingRegistry.ts",
     "test:binding-aware-execution": "tsx src/migration/testBindingAwareExecution.ts",
     "test:checkpointed-binding-resume": "tsx src/migration/testCheckpointedBindingResume.ts",
-    "test:full-fake-migration": "tsx src/migration/testFullFakeMigrationOrchestrator.ts"
+    "test:full-fake-migration": "tsx src/migration/testFullFakeMigrationOrchestrator.ts",
+    "test:full-checkpointed-fake-migration": "tsx src/migration/testFullCheckpointedFakeMigration.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

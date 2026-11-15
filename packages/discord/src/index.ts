@@ -396,3 +396,15 @@ export type {
 export {
   runFullFakeMigration,
 } from './migration/fullFakeMigrationOrchestrator.js';
+
+export type {
+  FullCheckpointedFakeMigrationBlockReason,
+  FullCheckpointedFakeMigrationPhase,
+  FullCheckpointedFakeMigrationPhaseResult,
+  FullCheckpointedFakeMigrationResult,
+  FullCheckpointedFakeMigrationStatus,
+} from './migration/fullCheckpointedFakeMigrationTypes.js';
+
+export {
+  runFullCheckpointedFakeMigration,
+} from './migration/fullCheckpointedFakeMigration.js';
