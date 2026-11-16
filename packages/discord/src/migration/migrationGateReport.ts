@@ -57,7 +57,7 @@ export function renderMigrationGate(
     'EJECUCIÓN PERMITIDA: NO',
     '',
     'La huella identifica esta versión exacta del plan.',
-    'Un cambio en el snapshot, bindings, operaciones, preflight o jerarquía producirá una huella diferente.',
+    'Un cambio en el snapshot, bindings, operaciones, Execution Preview, preflight o jerarquía producirá una huella diferente.',
     '',
   );
 
