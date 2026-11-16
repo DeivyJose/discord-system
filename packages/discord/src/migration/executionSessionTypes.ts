@@ -67,8 +67,24 @@ export interface ExecutionSessionPhase {
   stopConditions: string[];
 }
 
+export interface ExecutionSessionReceiptClaim {
+  claimed: true;
+
+  receiptId: string;
+
+  sessionId: string;
+
+  gateFingerprint: string;
+
+  confirmationId: string;
+
+  claimedAt: string;
+
+  executionAllowed: false;
+}
+
 export interface ExecutionSessionPlan {
-  schemaVersion: 1;
+  schemaVersion: 2;
 
   sessionId: string;
 
@@ -85,6 +101,10 @@ export interface ExecutionSessionPlan {
   gateFingerprint: string;
 
   approvalReceiptId: string;
+
+  receiptClaim:
+    ExecutionSessionReceiptClaim |
+    null;
 
   source: {
     operationsGeneratedAt: string;

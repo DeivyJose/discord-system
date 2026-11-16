@@ -35,7 +35,8 @@
     "test:full-fake-migration": "tsx src/migration/testFullFakeMigrationOrchestrator.ts",
     "test:full-checkpointed-fake-migration": "tsx src/migration/testFullCheckpointedFakeMigration.ts",
     "test:migration-gate-content-fingerprint": "tsx src/migration/testMigrationGateContentFingerprint.ts",
-    "test:explicit-approval-boundary": "tsx src/migration/testExplicitApprovalBoundary.ts"
+    "test:explicit-approval-boundary": "tsx src/migration/testExplicitApprovalBoundary.ts",
+    "test:single-use-execution-session": "tsx src/migration/testSingleUseExecutionSession.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

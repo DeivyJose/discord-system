@@ -24,9 +24,10 @@ import type {
   ExecutionSessionPhase,
   ExecutionSessionPhaseId,
   ExecutionSessionPlan,
+  ExecutionSessionReceiptClaim,
 } from './executionSessionTypes.js';
 
-interface ExecutionSessionPlannerInput {
+export interface ExecutionSessionPlannerInput {
   operations: MigrationOperationsPlan;
 
   preview: DiscordExecutionPreview;
@@ -34,6 +35,11 @@ interface ExecutionSessionPlannerInput {
   gate: MigrationGate;
 
   receipt: ApprovalReceipt;
+
+  sessionId?: string;
+
+  receiptClaim?:
+    ExecutionSessionReceiptClaim;
 }
 
 const PHASE_DEFINITIONS: readonly {
@@ -145,7 +151,15 @@ export function createExecutionSessionPlan(
     preview,
     gate,
     receipt,
+    receiptClaim,
   } = input;
+
+  const sessionId =
+    input.sessionId ??
+    randomBytes(12)
+      .toString(
+        'hex',
+      );
 
   const checks:
     ExecutionSessionCheck[] = [];
@@ -196,6 +210,47 @@ export function createExecutionSessionPlan(
       receiptApproved
         ? `Approval Receipt ${receipt.receiptId} aprobado.`
         : 'El Approval Receipt no contiene una aprobación válida.',
+  });
+
+  const receiptConfirmationId =
+    receipt.manifest
+      .confirmationId;
+
+  const receiptClaimValid =
+    receiptClaim
+      ?.claimed ===
+        true &&
+    receiptClaim
+      .receiptId ===
+        receipt.receiptId &&
+    receiptClaim
+      .sessionId ===
+        sessionId &&
+    receiptClaim
+      .gateFingerprint ===
+        gate.fingerprint &&
+    receiptConfirmationId !==
+      null &&
+    receiptClaim
+      .confirmationId ===
+        receiptConfirmationId &&
+    receiptClaim
+      .executionAllowed ===
+        false;
+
+  checks.push({
+    id:
+      'receipt_single_use_claim',
+
+    status:
+      receiptClaimValid
+        ? 'pass'
+        : 'block',
+
+    details:
+      receiptClaimValid
+        ? `Receipt ${receipt.receiptId} reclamado exclusivamente para Session ${sessionId}.`
+        : 'Falta un claim atómico válido que ligue este Receipt a esta Execution Session.',
   });
 
   const executionStillDisabled =
@@ -792,11 +847,9 @@ export function createExecutionSessionPlan(
     blockChecks === 0;
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
 
-    sessionId:
-      randomBytes(12)
-        .toString('hex'),
+    sessionId,
 
     generatedAt:
       now.toISOString(),
@@ -816,6 +869,13 @@ export function createExecutionSessionPlan(
 
     approvalReceiptId:
       receipt.receiptId,
+
+    receiptClaim:
+      receiptClaim
+        ? structuredClone(
+            receiptClaim,
+          )
+        : null,
 
     source: {
       operationsGeneratedAt:

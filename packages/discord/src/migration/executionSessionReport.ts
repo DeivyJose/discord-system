@@ -20,6 +20,36 @@ export function renderExecutionSessionPlan(
     '----------------------',
     `Gate fingerprint: ${session.gateFingerprint}`,
     `Approval Receipt: ${session.approvalReceiptId}`,
+    `Receipt claim: ${
+      session.receiptClaim
+        ? 'SÍ'
+        : 'NO'
+    }`,
+    `Confirmation ID: ${
+      session.receiptClaim
+        ?.confirmationId ??
+      '(sin claim)'
+    }`,
+    `Receipt reclamado: ${
+      session.receiptClaim
+        ?.claimedAt ??
+      '(sin claim)'
+    }`,
+    `Receipt claim: ${
+      session.receiptClaim
+        ? 'SÍ'
+        : 'NO'
+    }`,
+    `Confirmation ID: ${
+      session.receiptClaim
+        ?.confirmationId ??
+      '(sin claim)'
+    }`,
+    `Receipt reclamado: ${
+      session.receiptClaim
+        ?.claimedAt ??
+      '(sin claim)'
+    }`,
     `Receipt expira: ${session.source.receiptExpiresAt}`,
     `Snapshot: ${session.source.snapshotCapturedAt}`,
     '',

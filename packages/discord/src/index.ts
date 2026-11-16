@@ -427,3 +427,27 @@ export type {
   ConfirmationApprovalEvidence,
   ConfirmationApprovalMethod,
 } from './migration/approvalReceiptTypes.js';
+
+export type {
+  ExecutionSessionReceiptClaimOptions,
+  ExecutionSessionReceiptClaimResult,
+} from './migration/executionSessionReceiptClaim.js';
+
+export {
+  claimReceiptForExecutionSession,
+} from './migration/executionSessionReceiptClaim.js';
+
+export type {
+  SingleUseExecutionSessionBlockReason,
+  SingleUseExecutionSessionOptions,
+  SingleUseExecutionSessionResult,
+} from './migration/singleUseExecutionSession.js';
+
+export {
+  createSingleUseExecutionSession,
+} from './migration/singleUseExecutionSession.js';
+
+export type {
+  ExecutionSessionReceiptClaim,
+} from './migration/executionSessionTypes.js';
+

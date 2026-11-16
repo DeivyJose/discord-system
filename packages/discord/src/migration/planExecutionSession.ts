@@ -23,8 +23,8 @@ import type {
 } from './approvalReceiptTypes.js';
 
 import {
-  createExecutionSessionPlan,
-} from './executionSessionPlanner.js';
+  createSingleUseExecutionSession,
+} from './singleUseExecutionSession.js';
 
 import {
   renderExecutionSessionPlan,
@@ -83,13 +83,42 @@ const receipt =
     'latest.json',
   );
 
-const session =
-  createExecutionSessionPlan({
+const creation =
+  await createSingleUseExecutionSession({
     operations,
     preview,
     gate,
     receipt,
+
+    claimsDirectory:
+      path.join(
+        projectRoot,
+        '.data',
+        'execution-session-receipt-claims',
+      ),
   });
+
+if (
+  !creation.session
+) {
+  console.error('');
+  console.error(
+    `BLOCK: Execution Session no creada (${creation.blockReason}).`,
+  );
+
+  console.error(
+    `Receipt consumido: ${creation.receiptClaimed ? 'SÍ' : 'NO'}`,
+  );
+
+  console.error('');
+
+  process.exit(
+    2,
+  );
+}
+
+const session =
+  creation.session;
 
 const report =
   renderExecutionSessionPlan(
