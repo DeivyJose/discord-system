@@ -42,7 +42,8 @@
     "test:discord-checkpointed-binding-resume": "npm run test:checkpointed-binding-resume --workspace=@the-clock/discord",
     "test:discord-full-fake-migration": "npm run test:full-fake-migration --workspace=@the-clock/discord",
     "test:discord-full-checkpointed-fake-migration": "npm run test:full-checkpointed-fake-migration --workspace=@the-clock/discord",
-    "test:discord-migration-gate-content-fingerprint": "npm run test:migration-gate-content-fingerprint --workspace=@the-clock/discord"
+    "test:discord-migration-gate-content-fingerprint": "npm run test:migration-gate-content-fingerprint --workspace=@the-clock/discord",
+    "test:discord-explicit-approval-boundary": "npm run test:explicit-approval-boundary --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",

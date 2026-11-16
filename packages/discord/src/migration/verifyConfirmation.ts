@@ -28,6 +28,10 @@ import {
 } from './confirmationVerifier.js';
 
 import {
+  claimApprovalConfirmation,
+} from './approvalConsumption.js';
+
+import {
   renderApprovalReceipt,
 } from './approvalReceiptReport.js';
 
@@ -86,6 +90,31 @@ console.log(
 
 console.log('');
 
+const inputIsTTY =
+  input.isTTY ===
+    true;
+
+const outputIsTTY =
+  output.isTTY ===
+    true;
+
+if (
+  !inputIsTTY ||
+  !outputIsTTY
+) {
+  console.error(
+    'BLOCK: la aprobación requiere una terminal interactiva real.',
+  );
+
+  console.error(
+    'stdin redirigido, pipes y archivos de entrada no son aceptados.',
+  );
+
+  process.exit(
+    2,
+  );
+}
+
 const readline =
   createInterface({
     input,
@@ -103,12 +132,87 @@ try {
   readline.close();
 }
 
-const receipt =
+const approvalEvidence = {
+  method:
+    'interactive_tty' as const,
+
+  inputIsTTY,
+
+  outputIsTTY,
+
+  confirmationUnused:
+    true,
+};
+
+let receipt =
   verifyConfirmationManifest(
     manifest,
     gate,
     phrase,
+    approvalEvidence,
   );
+
+/*
+ * Solo una aprobación que ya pasó todos los
+ * checks intenta reclamar el confirmationId.
+ *
+ * El marker se crea atómicamente con flag wx.
+ * Si ya existe, el Receipt final se rehace
+ * como rejected.
+ */
+if (
+  receipt.summary
+    .approvalValid
+) {
+  const confirmationId =
+    manifest.confirmationId;
+
+  if (
+    !confirmationId
+  ) {
+    throw new Error(
+      'Manifest aprobado sin confirmationId.',
+    );
+  }
+
+  const claim =
+    await claimApprovalConfirmation({
+      directory:
+        path.join(
+          projectRoot,
+          '.data',
+          'approval-consumption',
+        ),
+
+      confirmationId,
+
+      gateFingerprint:
+        gate.fingerprint,
+
+      receiptId:
+        receipt.receiptId,
+
+      claimedAt:
+        receipt.verifiedAt,
+    });
+
+  if (
+    !claim.claimed
+  ) {
+    receipt =
+      verifyConfirmationManifest(
+        manifest,
+        gate,
+        phrase,
+        {
+          ...approvalEvidence,
+
+          confirmationUnused:
+            false,
+        },
+      );
+  }
+}
 
 const report =
   renderApprovalReceipt(

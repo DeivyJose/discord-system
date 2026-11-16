@@ -34,7 +34,8 @@
     "test:checkpointed-binding-resume": "tsx src/migration/testCheckpointedBindingResume.ts",
     "test:full-fake-migration": "tsx src/migration/testFullFakeMigrationOrchestrator.ts",
     "test:full-checkpointed-fake-migration": "tsx src/migration/testFullCheckpointedFakeMigration.ts",
-    "test:migration-gate-content-fingerprint": "tsx src/migration/testMigrationGateContentFingerprint.ts"
+    "test:migration-gate-content-fingerprint": "tsx src/migration/testMigrationGateContentFingerprint.ts",
+    "test:explicit-approval-boundary": "tsx src/migration/testExplicitApprovalBoundary.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

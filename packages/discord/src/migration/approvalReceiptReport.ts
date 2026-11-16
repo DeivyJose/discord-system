@@ -19,6 +19,18 @@ export function renderApprovalReceipt(
     'PLAN AUTORIZADO',
     '---------------',
     `Fingerprint: ${receipt.gateFingerprint}`,
+    `Método de aprobación: ${receipt.approvalBoundary.method}`,
+    `Terminal interactiva: ${
+      receipt.approvalBoundary.inputIsTTY &&
+      receipt.approvalBoundary.outputIsTTY
+        ? 'SÍ'
+        : 'NO'
+    }`,
+    `Confirmation ID no reutilizado: ${
+      receipt.approvalBoundary.confirmationUnused
+        ? 'SÍ'
+        : 'NO'
+    }`,
     `Confirmation ID: ${receipt.manifest.confirmationId ?? '(ninguno)'}`,
     `Manifest creado: ${receipt.manifest.createdAt}`,
     `Manifest expira: ${receipt.manifest.expiresAt}`,
@@ -55,7 +67,8 @@ export function renderApprovalReceipt(
     '',
     'EJECUCIÓN PERMITIDA: NO',
     '',
-    'Este Receipt demuestra únicamente que una frase válida fue verificada.',
+    'Este Receipt demuestra que una frase válida pasó la frontera interactiva configurada.',
+    'El confirmationId solamente puede producir una aprobación local una vez.',
     'No contiene la frase introducida.',
     'No ejecuta ni modifica Discord.',
     '',

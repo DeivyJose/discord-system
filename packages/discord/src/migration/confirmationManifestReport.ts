@@ -64,6 +64,8 @@ export function renderConfirmationManifest(
       '',
       'Esta frase NO ha sido aprobada todavía.',
       'Solo identifica esta versión exacta y temporal del plan.',
+      'La verificación exige una terminal interactiva; stdin redirigido está bloqueado.',
+      'El confirmationId solo puede consumirse una vez localmente.',
     );
   }
 

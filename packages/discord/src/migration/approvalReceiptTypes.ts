@@ -14,8 +14,25 @@ export interface ConfirmationVerificationCheck {
   details: string;
 }
 
+export type ConfirmationApprovalMethod =
+  | 'interactive_tty';
+
+export interface ConfirmationApprovalEvidence {
+  method: ConfirmationApprovalMethod;
+
+  inputIsTTY: boolean;
+
+  outputIsTTY: boolean;
+
+  /**
+   * true solamente cuando este confirmationId
+   * todavía no había sido consumido.
+   */
+  confirmationUnused: boolean;
+}
+
 export interface ApprovalReceipt {
-  schemaVersion: 1;
+  schemaVersion: 2;
 
   receiptId: string;
 
@@ -29,6 +46,9 @@ export interface ApprovalReceipt {
   };
 
   gateFingerprint: string;
+
+  approvalBoundary:
+    ConfirmationApprovalEvidence;
 
   manifest: {
     createdAt: string;

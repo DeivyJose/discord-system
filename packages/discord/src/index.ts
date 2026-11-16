@@ -413,3 +413,17 @@ export type {
 export {
   runFullCheckpointedFakeMigration,
 } from './migration/fullCheckpointedFakeMigration.js';
+
+export type {
+  ApprovalConsumptionOptions,
+  ApprovalConsumptionResult,
+} from './migration/approvalConsumption.js';
+
+export {
+  claimApprovalConfirmation,
+} from './migration/approvalConsumption.js';
+
+export type {
+  ConfirmationApprovalEvidence,
+  ConfirmationApprovalMethod,
+} from './migration/approvalReceiptTypes.js';

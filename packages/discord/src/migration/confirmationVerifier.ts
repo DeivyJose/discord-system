@@ -13,6 +13,7 @@ import type {
 
 import type {
   ApprovalReceipt,
+  ConfirmationApprovalEvidence,
   ConfirmationVerificationCheck,
 } from './approvalReceiptTypes.js';
 
@@ -59,6 +60,8 @@ export function verifyConfirmationManifest(
   manifest: ConfirmationManifest,
   gate: MigrationGate,
   providedPhrase: string,
+  approvalEvidence:
+    ConfirmationApprovalEvidence,
   now = new Date(),
 ): ApprovalReceipt {
   const checks:
@@ -155,6 +158,61 @@ export function verifyConfirmationManifest(
 
     details:
       'Manifest y Gate deben conservar executionAllowed=false.',
+  });
+
+  const interactiveMethod =
+    approvalEvidence.method ===
+      'interactive_tty';
+
+  checks.push({
+    id:
+      'approval_method',
+
+    status:
+      interactiveMethod
+        ? 'pass'
+        : 'block',
+
+    details:
+      interactiveMethod
+        ? 'La aprobación usa el método interactive_tty.'
+        : 'La aprobación no proviene del método interactivo autorizado.',
+  });
+
+  const interactiveTerminal =
+    approvalEvidence.inputIsTTY &&
+    approvalEvidence.outputIsTTY;
+
+  checks.push({
+    id:
+      'interactive_terminal',
+
+    status:
+      interactiveTerminal
+        ? 'pass'
+        : 'block',
+
+    details:
+      interactiveTerminal
+        ? 'Entrada y salida pertenecen a una terminal interactiva.'
+        : 'stdin/stdout redirigidos o no interactivos están bloqueados.',
+  });
+
+  checks.push({
+    id:
+      'confirmation_unused',
+
+    status:
+      approvalEvidence
+        .confirmationUnused
+        ? 'pass'
+        : 'block',
+
+    details:
+      approvalEvidence
+        .confirmationUnused
+        ? 'El confirmationId todavía no había sido consumido.'
+        : 'El confirmationId ya fue utilizado anteriormente.',
   });
 
   const confirmationIdentityPresent =
@@ -374,7 +432,7 @@ export function verifyConfirmationManifest(
     block === 0;
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
 
     receiptId:
       randomBytes(12)
@@ -395,6 +453,23 @@ export function verifyConfirmationManifest(
 
     gateFingerprint:
       gate.fingerprint,
+
+    approvalBoundary: {
+      method:
+        approvalEvidence.method,
+
+      inputIsTTY:
+        approvalEvidence
+          .inputIsTTY,
+
+      outputIsTTY:
+        approvalEvidence
+          .outputIsTTY,
+
+      confirmationUnused:
+        approvalEvidence
+          .confirmationUnused,
+    },
 
     manifest: {
       createdAt:
