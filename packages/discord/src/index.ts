@@ -451,3 +451,13 @@ export type {
   ExecutionSessionReceiptClaim,
 } from './migration/executionSessionTypes.js';
 
+export type {
+  DiscordBlueprintArtifact,
+  DiscordBlueprintFingerprintInput,
+} from './blueprint/artifact.js';
+
+export {
+  createDiscordBlueprintArtifact,
+  createDiscordBlueprintContentFingerprint,
+  renderDiscordBlueprintArtifact,
+} from './blueprint/artifact.js';

@@ -45,7 +45,9 @@
     "test:discord-migration-gate-content-fingerprint": "npm run test:migration-gate-content-fingerprint --workspace=@the-clock/discord",
     "test:discord-explicit-approval-boundary": "npm run test:explicit-approval-boundary --workspace=@the-clock/discord",
     "test:discord-single-use-execution-session": "npm run test:single-use-execution-session --workspace=@the-clock/discord",
-    "test:discord-content-bound-execution-session": "npm run test:content-bound-execution-session --workspace=@the-clock/discord"
+    "test:discord-content-bound-execution-session": "npm run test:content-bound-execution-session --workspace=@the-clock/discord",
+    "artifact:discord-blueprint": "npm run artifact:blueprint --workspace=@the-clock/discord",
+    "test:discord-blueprint-fingerprint": "npm run test:blueprint-fingerprint --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",
