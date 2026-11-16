@@ -19,6 +19,7 @@ import type {
 } from './approvalReceiptTypes.js';
 
 import type {
+  ExecutionSessionGateArtifacts,
   ExecutionSessionPlan,
 } from './executionSessionTypes.js';
 
@@ -49,6 +50,9 @@ export interface SingleUseExecutionSessionOptions {
 
   receipt:
     ApprovalReceipt;
+
+  gateArtifacts:
+    ExecutionSessionGateArtifacts;
 
   claimsDirectory:
     string;
@@ -112,6 +116,9 @@ export async function createSingleUseExecutionSession(
 
         receipt:
           options.receipt,
+
+        gateArtifacts:
+          options.gateArtifacts,
 
         sessionId:
           candidateSessionId,
@@ -255,6 +262,9 @@ export async function createSingleUseExecutionSession(
 
         receipt:
           options.receipt,
+
+        gateArtifacts:
+          options.gateArtifacts,
 
         sessionId:
           candidateSessionId,

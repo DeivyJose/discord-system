@@ -7,6 +7,10 @@ import {
 import path from 'node:path';
 
 import type {
+  DiscordGuildSnapshot,
+} from '../inspector/types.js';
+
+import type {
   MigrationOperationsPlan,
 } from './operationTypes.js';
 
@@ -17,6 +21,18 @@ import type {
 import type {
   MigrationGate,
 } from './migrationGateTypes.js';
+
+import type {
+  DiscordMigrationPreflight,
+} from './preflightTypes.js';
+
+import type {
+  HierarchyBootstrapPlan,
+} from './hierarchyBootstrapTypes.js';
+
+import {
+  loadDiscordBindings,
+} from './bindings.js';
 
 import type {
   ApprovalReceipt,
@@ -55,6 +71,23 @@ console.log(
   '🧱 Generando Execution Session Plan...',
 );
 
+const snapshot =
+  await readJson<DiscordGuildSnapshot>(
+    '.data',
+    'discord-snapshots',
+    'latest.json',
+  );
+
+const bindings =
+  await loadDiscordBindings(
+    path.join(
+      projectRoot,
+      '.data',
+      'discord-bindings.json',
+    ),
+    snapshot.guild.id,
+  );
+
 const operations =
   await readJson<MigrationOperationsPlan>(
     '.data',
@@ -76,6 +109,20 @@ const gate =
     'latest.json',
   );
 
+const preflight =
+  await readJson<DiscordMigrationPreflight>(
+    '.data',
+    'migration-preflight',
+    'latest.json',
+  );
+
+const hierarchy =
+  await readJson<HierarchyBootstrapPlan>(
+    '.data',
+    'hierarchy-bootstrap',
+    'latest.json',
+  );
+
 const receipt =
   await readJson<ApprovalReceipt>(
     '.data',
@@ -89,6 +136,13 @@ const creation =
     preview,
     gate,
     receipt,
+
+    gateArtifacts: {
+      snapshot,
+      bindings,
+      preflight,
+      hierarchy,
+    },
 
     claimsDirectory:
       path.join(

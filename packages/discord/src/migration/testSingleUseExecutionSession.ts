@@ -6,6 +6,10 @@ import {
 import path from 'node:path';
 
 import type {
+  DiscordGuildSnapshot,
+} from '../inspector/types.js';
+
+import type {
   MigrationOperationsPlan,
 } from './operationTypes.js';
 
@@ -16,6 +20,18 @@ import type {
 import type {
   MigrationGate,
 } from './migrationGateTypes.js';
+
+import type {
+  DiscordMigrationPreflight,
+} from './preflightTypes.js';
+
+import type {
+  HierarchyBootstrapPlan,
+} from './hierarchyBootstrapTypes.js';
+
+import {
+  loadDiscordBindings,
+} from './bindings.js';
 
 import {
   createConfirmationManifest,
@@ -49,6 +65,25 @@ async function readJson<T>(
   ) as T;
 }
 
+const snapshot =
+  await readJson<
+    DiscordGuildSnapshot
+  >(
+    '.data',
+    'discord-snapshots',
+    'latest.json',
+  );
+
+const bindings =
+  await loadDiscordBindings(
+    path.join(
+      projectRoot,
+      '.data',
+      'discord-bindings.json',
+    ),
+    snapshot.guild.id,
+  );
+
 const operations =
   await readJson<
     MigrationOperationsPlan
@@ -75,6 +110,31 @@ const gate =
     'migration-gate',
     'latest.json',
   );
+
+const preflight =
+  await readJson<
+    DiscordMigrationPreflight
+  >(
+    '.data',
+    'migration-preflight',
+    'latest.json',
+  );
+
+const hierarchy =
+  await readJson<
+    HierarchyBootstrapPlan
+  >(
+    '.data',
+    'hierarchy-bootstrap',
+    'latest.json',
+  );
+
+const gateArtifacts = {
+  snapshot,
+  bindings,
+  preflight,
+  hierarchy,
+};
 
 const manifestTime =
   new Date(
@@ -168,6 +228,8 @@ const first =
     gate,
     receipt,
 
+    gateArtifacts,
+
     claimsDirectory:
       mainClaims,
 
@@ -184,7 +246,7 @@ const firstCreated =
     'ready' &&
   first.session
     .schemaVersion ===
-    2 &&
+    3 &&
   first.session
     .receiptClaim
     ?.receiptId ===
@@ -205,6 +267,8 @@ const second =
     preview,
     gate,
     receipt,
+
+    gateArtifacts,
 
     claimsDirectory:
       mainClaims,
@@ -257,6 +321,8 @@ const invalid =
     receipt:
       invalidReceipt,
 
+    gateArtifacts,
+
     claimsDirectory:
       invalidClaims,
 
@@ -290,6 +356,8 @@ const [
       gate,
       receipt,
 
+      gateArtifacts,
+
       claimsDirectory:
         raceClaims,
 
@@ -302,6 +370,8 @@ const [
       preview,
       gate,
       receipt,
+
+      gateArtifacts,
 
       claimsDirectory:
         raceClaims,

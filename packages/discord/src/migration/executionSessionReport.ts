@@ -19,6 +19,13 @@ export function renderExecutionSessionPlan(
     'AUTORIZACIÓN DE ORIGEN',
     '----------------------',
     `Gate fingerprint: ${session.gateFingerprint}`,
+    `Content-bound al Gate: ${
+      session.contentBinding.matchesGate
+        ? 'SÍ'
+        : 'NO'
+    }`,
+    `Fingerprint recalculado: ${session.contentBinding.recalculatedGateFingerprint}`,
+    `Fingerprint version: ${session.contentBinding.fingerprintVersion}`,
     `Approval Receipt: ${session.approvalReceiptId}`,
     `Receipt claim: ${
       session.receiptClaim

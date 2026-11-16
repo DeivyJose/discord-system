@@ -14,6 +14,10 @@ import type {
   MigrationGate,
 } from './migrationGateTypes.js';
 
+import {
+  createMigrationGateContentFingerprint,
+} from './migrationGate.js';
+
 import type {
   ApprovalReceipt,
 } from './approvalReceiptTypes.js';
@@ -21,6 +25,7 @@ import type {
 import type {
   ExecutionSessionCheck,
   ExecutionSessionCheckStatus,
+  ExecutionSessionGateArtifacts,
   ExecutionSessionPhase,
   ExecutionSessionPhaseId,
   ExecutionSessionPlan,
@@ -35,6 +40,9 @@ export interface ExecutionSessionPlannerInput {
   gate: MigrationGate;
 
   receipt: ApprovalReceipt;
+
+  gateArtifacts:
+    ExecutionSessionGateArtifacts;
 
   sessionId?: string;
 
@@ -151,6 +159,7 @@ export function createExecutionSessionPlan(
     preview,
     gate,
     receipt,
+    gateArtifacts,
     receiptClaim,
   } = input;
 
@@ -189,6 +198,53 @@ export function createExecutionSessionPlan(
       sameGuild
         ? `Todos los artefactos pertenecen al Guild ${gate.guild.id}.`
         : `Guild IDs encontrados: ${guildIds.join(', ')}.`,
+  });
+
+  const recalculatedGateFingerprint =
+    createMigrationGateContentFingerprint({
+      snapshot:
+        gateArtifacts.snapshot,
+
+      bindings:
+        gateArtifacts.bindings,
+
+      operations,
+
+      executionPreview:
+        preview,
+
+      preflight:
+        gateArtifacts.preflight,
+
+      hierarchy:
+        gateArtifacts.hierarchy,
+    });
+
+  const gateContentMatches =
+    gate.schemaVersion ===
+      2 &&
+    gate.fingerprintVersion ===
+      2 &&
+    recalculatedGateFingerprint ===
+      gate.fingerprint;
+
+  checks.push({
+    id:
+      'gate_content_binding',
+
+    status:
+      gateContentMatches
+        ? 'pass'
+        : 'block',
+
+    details:
+      gateContentMatches
+        ? 'Los seis artefactos actuales reproducen exactamente el fingerprint del Migration Gate v2.'
+        : [
+            'Los artefactos actuales NO reproducen el Migration Gate autorizado.',
+            `Esperado=${gate.fingerprint}.`,
+            `Recalculado=${recalculatedGateFingerprint}.`,
+          ].join(' '),
   });
 
   const receiptApproved =
@@ -847,7 +903,7 @@ export function createExecutionSessionPlan(
     blockChecks === 0;
 
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
 
     sessionId,
 
@@ -866,6 +922,22 @@ export function createExecutionSessionPlan(
 
     gateFingerprint:
       gate.fingerprint,
+
+    contentBinding: {
+      fingerprintVersion:
+        2,
+
+      expectedGateFingerprint:
+        gate.fingerprint,
+
+      recalculatedGateFingerprint,
+
+      matchesGate:
+        gateContentMatches,
+
+      executionAllowed:
+        false,
+    },
 
     approvalReceiptId:
       receipt.receiptId,

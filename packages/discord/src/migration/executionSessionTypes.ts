@@ -6,6 +6,10 @@ import type {
   DiscordExecutionPreview,
 } from './executionTypes.js';
 
+import type {
+  MigrationGateFingerprintInput,
+} from './migrationGate.js';
+
 export type ExecutionSessionStatus =
   | 'ready'
   | 'blocked';
@@ -67,6 +71,27 @@ export interface ExecutionSessionPhase {
   stopConditions: string[];
 }
 
+export type ExecutionSessionGateArtifacts =
+  Pick<
+    MigrationGateFingerprintInput,
+    | 'snapshot'
+    | 'bindings'
+    | 'preflight'
+    | 'hierarchy'
+  >;
+
+export interface ExecutionSessionContentBinding {
+  fingerprintVersion: 2;
+
+  expectedGateFingerprint: string;
+
+  recalculatedGateFingerprint: string;
+
+  matchesGate: boolean;
+
+  executionAllowed: false;
+}
+
 export interface ExecutionSessionReceiptClaim {
   claimed: true;
 
@@ -84,7 +109,7 @@ export interface ExecutionSessionReceiptClaim {
 }
 
 export interface ExecutionSessionPlan {
-  schemaVersion: 2;
+  schemaVersion: 3;
 
   sessionId: string;
 
@@ -99,6 +124,9 @@ export interface ExecutionSessionPlan {
   };
 
   gateFingerprint: string;
+
+  contentBinding:
+    ExecutionSessionContentBinding;
 
   approvalReceiptId: string;
 
