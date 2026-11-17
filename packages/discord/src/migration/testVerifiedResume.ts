@@ -172,6 +172,9 @@ const context:
     gateFingerprint:
       session.gateFingerprint,
 
+    gateEnvelopeFingerprint:
+      session.gateEnvelopeFingerprint,
+
     phase:
       'roles',
 
@@ -343,6 +346,66 @@ const wrongSessionBlockedBeforeRestore =
     0;
 
 /*
+ * TEST:
+ * mismo Content Fingerprint,
+ * pero otro Gate Envelope.
+ *
+ * Debe fallar en Integrity Guard,
+ * antes de restaurar el adapter.
+ */
+const wrongEnvelopeContext:
+  CheckpointIntegrityContext = {
+    ...context,
+
+    gateEnvelopeFingerprint:
+      `${context.gateEnvelopeFingerprint}-incorrecto`,
+  };
+
+let wrongEnvelopeFactoryCalls =
+  0;
+
+const wrongEnvelopeResume =
+  await verifiedResumeExecution({
+    sealedCheckpoint:
+      sealed,
+
+    expectedContext:
+      wrongEnvelopeContext,
+
+    operations:
+      roleOperations,
+
+    adapterFactory:
+      (
+        snapshot,
+      ) => {
+        wrongEnvelopeFactoryCalls +=
+          1;
+
+        return new FakeDiscordExecutionAdapter(
+          snapshot,
+        );
+      },
+  });
+
+const wrongEnvelopeBlockedBeforeRestore =
+  wrongEnvelopeResume.status ===
+    'blocked' &&
+  wrongEnvelopeResume.blockReason ===
+    'integrity_verification_failed' &&
+  wrongEnvelopeResume.adapterRestored ===
+    false &&
+  wrongEnvelopeFactoryCalls ===
+    0 &&
+  wrongEnvelopeResume.integrity.checks.some(
+    (check) =>
+      check.id ===
+        'gate_envelope_fingerprint' &&
+      check.status ===
+        'block',
+  );
+
+/*
  * TEST 4:
  * usar contexto correcto pero entregar al runner
  * una secuencia diferente de operaciones.
@@ -414,6 +477,7 @@ const success =
   validResumePasses &&
   tamperedBlockedBeforeRestore &&
   wrongSessionBlockedBeforeRestore &&
+  wrongEnvelopeBlockedBeforeRestore &&
   changedOperationsBlockedBeforeRestore;
 
 const result = {
@@ -464,6 +528,17 @@ const result = {
         wrongSessionResume,
     },
 
+    wrongEnvelope: {
+      success:
+        wrongEnvelopeBlockedBeforeRestore,
+
+      factoryCalls:
+        wrongEnvelopeFactoryCalls,
+
+      result:
+        wrongEnvelopeResume,
+    },
+
     changedOperations: {
       success:
         changedOperationsBlockedBeforeRestore,
@@ -501,6 +576,9 @@ const report = [
   '',
   `Otra sesión bloqueada: ${wrongSessionBlockedBeforeRestore ? 'SÍ' : 'NO'}`,
   `Factory con otra sesión: ${wrongSessionFactoryCalls}`,
+  '',
+  `Otro Gate Envelope bloqueado: ${wrongEnvelopeBlockedBeforeRestore ? 'SÍ' : 'NO'}`,
+  `Factory con otro Envelope: ${wrongEnvelopeFactoryCalls}`,
   '',
   `Operaciones cambiadas bloqueadas: ${changedOperationsBlockedBeforeRestore ? 'SÍ' : 'NO'}`,
   `Factory con operaciones cambiadas: ${changedOperationsFactoryCalls}`,
@@ -575,6 +653,13 @@ console.log(
 );
 console.log(
   `Factory con otra sesión: ${wrongSessionFactoryCalls}`,
+);
+console.log('');
+console.log(
+  `Otro Gate Envelope bloqueado: ${wrongEnvelopeBlockedBeforeRestore ? 'SÍ' : 'NO'}`,
+);
+console.log(
+  `Factory con otro Envelope: ${wrongEnvelopeFactoryCalls}`,
 );
 console.log('');
 console.log(

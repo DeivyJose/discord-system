@@ -631,6 +631,27 @@ export function verifyLiveDrift(
         : 'El baseline pertenece a otro Migration Gate.',
   });
 
+  checks.push({
+    id:
+      'gate_envelope_fingerprint',
+
+    status:
+      baseline.context
+        .gateEnvelopeFingerprint ===
+        expectedContext
+          .gateEnvelopeFingerprint
+        ? 'pass'
+        : 'block',
+
+    details:
+      baseline.context
+        .gateEnvelopeFingerprint ===
+        expectedContext
+          .gateEnvelopeFingerprint
+        ? 'Migration Gate envelope fingerprint coincide.'
+        : 'El baseline pertenece a otro envelope del Migration Gate.',
+  });
+
   const sameGuild =
     baseline.snapshot
       .guildId ===

@@ -137,6 +137,9 @@ const driftContext:
 
     gateFingerprint:
       session.gateFingerprint,
+
+    gateEnvelopeFingerprint:
+      session.gateEnvelopeFingerprint,
   };
 
 const transactionContext:
@@ -149,6 +152,9 @@ const transactionContext:
 
     gateFingerprint:
       session.gateFingerprint,
+
+    gateEnvelopeFingerprint:
+      session.gateEnvelopeFingerprint,
 
     phase:
       'roles',
@@ -374,10 +380,73 @@ const wrongContextBlocked =
   wrongContextResult.transaction ===
     null;
 
+/*
+ * TEST 4:
+ * Drift y Transaction pertenecen al mismo
+ * Content Fingerprint, pero a envelopes distintos.
+ *
+ * Debe bloquearse antes del adapterFactory.
+ */
+const wrongEnvelopeTransactionContext:
+  CheckpointIntegrityContext = {
+    ...transactionContext,
+
+    gateEnvelopeFingerprint:
+      `${transactionContext.gateEnvelopeFingerprint}-incorrecto`,
+  };
+
+let envelopeFactoryCalls =
+  0;
+
+const wrongEnvelopeResult =
+  await runDriftProtectedPhase({
+    baseline,
+
+    currentSnapshot:
+      identicalLiveSnapshot,
+
+    driftContext,
+
+    transactionContext:
+      wrongEnvelopeTransactionContext,
+
+    operations:
+      roleOperations,
+
+    adapterFactory:
+      () => {
+        envelopeFactoryCalls +=
+          1;
+
+        return new FakeDiscordExecutionAdapter();
+      },
+  });
+
+const wrongEnvelopeBlocked =
+  wrongEnvelopeResult.status ===
+    'blocked' &&
+  wrongEnvelopeResult.blockReason ===
+    'context_mismatch' &&
+  wrongEnvelopeResult
+    .adapterFactoryReached ===
+    false &&
+  envelopeFactoryCalls ===
+    0 &&
+  wrongEnvelopeResult.transaction ===
+    null &&
+  wrongEnvelopeResult.checks.some(
+    (check) =>
+      check.id ===
+        'gate_envelope_context_alignment' &&
+      check.status ===
+        'block',
+  );
+
 const success =
   validPasses &&
   driftBlockedBeforeFactory &&
-  wrongContextBlocked;
+  wrongContextBlocked &&
+  wrongEnvelopeBlocked;
 
 const result = {
   schemaVersion: 1,
@@ -418,6 +487,16 @@ const result = {
       result:
         wrongContextResult,
     },
+    wrongEnvelope: {
+      success:
+        wrongEnvelopeBlocked,
+
+      factoryCalls:
+        envelopeFactoryCalls,
+
+      result:
+        wrongEnvelopeResult,
+    },
   },
 
   success,
@@ -448,6 +527,8 @@ const report = [
   '-------------',
   `Contexto incorrecto bloqueado: ${wrongContextBlocked ? 'SÍ' : 'NO'}`,
   `Factory con contexto incorrecto: ${contextFactoryCalls}`,
+  `Envelope distinto bloqueado: ${wrongEnvelopeBlocked ? 'SÍ' : 'NO'}`,
+  `Factory con Envelope distinto: ${envelopeFactoryCalls}`,
   '',
   `Prueba completa: ${success ? 'SÍ' : 'NO'}`,
   '',
@@ -519,6 +600,12 @@ console.log(
 );
 console.log(
   `Factory con contexto incorrecto: ${contextFactoryCalls}`,
+);
+console.log(
+  `Envelope distinto bloqueado: ${wrongEnvelopeBlocked ? 'SÍ' : 'NO'}`,
+);
+console.log(
+  `Factory con Envelope distinto: ${envelopeFactoryCalls}`,
 );
 console.log('');
 console.log(

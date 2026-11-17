@@ -164,6 +164,9 @@ const context:
     gateFingerprint:
       session.gateFingerprint,
 
+    gateEnvelopeFingerprint:
+      session.gateEnvelopeFingerprint,
+
     phase:
       'roles',
 
@@ -198,6 +201,25 @@ const wrongSessionVerification =
   verifyExecutionCheckpointIntegrity(
     sealed,
     wrongSessionContext,
+  );
+
+/*
+ * TEST:
+ * mismo Content Fingerprint,
+ * pero otro Gate Envelope.
+ */
+const wrongEnvelopeContext:
+  CheckpointIntegrityContext = {
+    ...context,
+
+    gateEnvelopeFingerprint:
+      `${context.gateEnvelopeFingerprint}-incorrecto`,
+  };
+
+const wrongEnvelopeVerification =
+  verifyExecutionCheckpointIntegrity(
+    sealed,
+    wrongEnvelopeContext,
   );
 
 const changedOperationIds = [
@@ -283,6 +305,17 @@ const wrongSessionBlocked =
         'block',
   );
 
+const wrongEnvelopeBlocked =
+  wrongEnvelopeVerification.status ===
+    'blocked' &&
+  wrongEnvelopeVerification.checks.some(
+    (check) =>
+      check.id ===
+        'gate_envelope_fingerprint' &&
+      check.status ===
+        'block',
+  );
+
 const changedOperationsBlocked =
   changedOperationsVerification.status ===
     'blocked' &&
@@ -308,6 +341,7 @@ const tamperingBlocked =
 const success =
   validPasses &&
   wrongSessionBlocked &&
+  wrongEnvelopeBlocked &&
   changedOperationsBlocked &&
   tamperingBlocked;
 
@@ -336,6 +370,14 @@ const result = {
 
       verification:
         wrongSessionVerification,
+    },
+
+    wrongEnvelope: {
+      success:
+        wrongEnvelopeBlocked,
+
+      verification:
+        wrongEnvelopeVerification,
     },
 
     changedOperations: {
@@ -379,6 +421,7 @@ const report = [
   '-------',
   `Checkpoint intacto aceptado: ${validPasses ? 'SÍ' : 'NO'}`,
   `Otra sesión bloqueada: ${wrongSessionBlocked ? 'SÍ' : 'NO'}`,
+  `Otro Gate Envelope bloqueado: ${wrongEnvelopeBlocked ? 'SÍ' : 'NO'}`,
   `Operaciones cambiadas bloqueadas: ${changedOperationsBlocked ? 'SÍ' : 'NO'}`,
   `Snapshot alterado bloqueado: ${tamperingBlocked ? 'SÍ' : 'NO'}`,
   '',
@@ -438,6 +481,9 @@ console.log(
 );
 console.log(
   `Otra sesión bloqueada: ${wrongSessionBlocked ? 'SÍ' : 'NO'}`,
+);
+console.log(
+  `Otro Gate Envelope bloqueado: ${wrongEnvelopeBlocked ? 'SÍ' : 'NO'}`,
 );
 console.log(
   `Operaciones cambiadas bloqueadas: ${changedOperationsBlocked ? 'SÍ' : 'NO'}`,

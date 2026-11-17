@@ -161,6 +161,9 @@ const context:
 
     gateFingerprint:
       session.gateFingerprint,
+
+    gateEnvelopeFingerprint:
+      session.gateEnvelopeFingerprint,
   };
 
 const baseline =
@@ -189,6 +192,39 @@ const identicalPasses =
     .summary
     .driftDetected ===
     false;
+
+/*
+ * TEST:
+ * mismo Session ID y Content Fingerprint,
+ * pero otro Gate Envelope.
+ */
+const wrongEnvelopeContext:
+  LiveDriftContext = {
+    ...context,
+
+    gateEnvelopeFingerprint:
+      `${context.gateEnvelopeFingerprint}-incorrecto`,
+  };
+
+const wrongEnvelopeVerification =
+  verifyLiveDrift(
+    baseline,
+    structuredClone(
+      normalized,
+    ),
+    wrongEnvelopeContext,
+  );
+
+const wrongEnvelopeBlocked =
+  wrongEnvelopeVerification.status ===
+    'blocked' &&
+  wrongEnvelopeVerification.checks.some(
+    (check) =>
+      check.id ===
+        'gate_envelope_fingerprint' &&
+      check.status ===
+        'block',
+  );
 
 /*
  * TEST 2:
@@ -328,6 +364,7 @@ const removalBlocked =
 
 const success =
   identicalPasses &&
+  wrongEnvelopeBlocked &&
   renameBlocked &&
   additionBlocked &&
   removalBlocked;
@@ -347,6 +384,14 @@ const result = {
 
       verification:
         identicalVerification,
+    },
+
+    wrongEnvelope: {
+      success:
+        wrongEnvelopeBlocked,
+
+      verification:
+        wrongEnvelopeVerification,
     },
 
     renamed: {
@@ -394,6 +439,7 @@ const report = [
   'PRUEBAS',
   '-------',
   `Snapshot idéntico aceptado: ${identicalPasses ? 'SÍ' : 'NO'}`,
+  `Otro Gate Envelope bloqueado: ${wrongEnvelopeBlocked ? 'SÍ' : 'NO'}`,
   `Rename inesperado bloqueado: ${renameBlocked ? 'SÍ' : 'NO'}`,
   `Recurso añadido bloqueado: ${additionBlocked ? 'SÍ' : 'NO'}`,
   `Recurso eliminado bloqueado: ${removalBlocked ? 'SÍ' : 'NO'}`,
@@ -451,6 +497,9 @@ console.log(
 console.log('');
 console.log(
   `Snapshot idéntico aceptado: ${identicalPasses ? 'SÍ' : 'NO'}`,
+);
+console.log(
+  `Otro Gate Envelope bloqueado: ${wrongEnvelopeBlocked ? 'SÍ' : 'NO'}`,
 );
 console.log(
   `Rename inesperado bloqueado: ${renameBlocked ? 'SÍ' : 'NO'}`,

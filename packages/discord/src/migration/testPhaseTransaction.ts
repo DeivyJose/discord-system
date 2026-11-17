@@ -110,6 +110,9 @@ const context:
     gateFingerprint:
       session.gateFingerprint,
 
+    gateEnvelopeFingerprint:
+      session.gateEnvelopeFingerprint,
+
     phase:
       'roles',
 

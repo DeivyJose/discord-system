@@ -49,6 +49,8 @@ interface FullCheckpointedFakeMigrationOptions {
 
   gateFingerprint: string;
 
+  gateEnvelopeFingerprint: string;
+
   confirmedBindings:
     Readonly<Record<string, string>>;
 
@@ -205,6 +207,9 @@ function makeContext(
     gateFingerprint:
       options.gateFingerprint,
 
+    gateEnvelopeFingerprint:
+      options.gateEnvelopeFingerprint,
+
     phase,
 
     operationIds:
@@ -293,6 +298,9 @@ export async function runFullCheckpointedFakeMigration(
 
     gateFingerprint:
       options.gateFingerprint,
+
+    gateEnvelopeFingerprint:
+      options.gateEnvelopeFingerprint,
   };
 
   const drift =

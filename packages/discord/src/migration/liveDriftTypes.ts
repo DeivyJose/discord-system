@@ -34,6 +34,8 @@ export interface LiveDriftContext {
   sessionId: string;
 
   gateFingerprint: string;
+
+  gateEnvelopeFingerprint: string;
 }
 
 export interface LiveDriftBaseline {

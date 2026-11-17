@@ -160,11 +160,16 @@ const sessionId =
 const gateFingerprint =
   'full-checkpointed-fake-test-gate';
 
+const gateEnvelopeFingerprint =
+  'full-checkpointed-fake-test-envelope';
+
 const driftContext:
   LiveDriftContext = {
   sessionId,
 
   gateFingerprint,
+
+  gateEnvelopeFingerprint,
 };
 
 const authorizedSnapshot =
@@ -201,6 +206,8 @@ const full =
     sessionId,
 
     gateFingerprint,
+
+  gateEnvelopeFingerprint,
 
     confirmedBindings:
       bindingFile.resources,
@@ -454,6 +461,8 @@ const driftBlocked =
 
     gateFingerprint,
 
+  gateEnvelopeFingerprint,
+
     confirmedBindings:
       bindingFile.resources,
 
@@ -491,6 +500,8 @@ const channelsContext:
   sessionId,
 
   gateFingerprint,
+
+  gateEnvelopeFingerprint,
 
   phase:
     'channels',

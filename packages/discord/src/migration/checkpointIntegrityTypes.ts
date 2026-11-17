@@ -9,6 +9,8 @@ export interface CheckpointIntegrityContext {
 
   gateFingerprint: string;
 
+  gateEnvelopeFingerprint: string;
+
   phase: string;
 
   operationIds: string[];

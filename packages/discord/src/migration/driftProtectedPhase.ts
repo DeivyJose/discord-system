@@ -65,6 +65,27 @@ export async function runDriftProtectedPhase(
         : 'Live Drift y Transaction usan Migration Gates diferentes.',
   });
 
+  const envelopeMatches =
+    options.driftContext
+      .gateEnvelopeFingerprint ===
+    options.transactionContext
+      .gateEnvelopeFingerprint;
+
+  checks.push({
+    id:
+      'gate_envelope_context_alignment',
+
+    status:
+      envelopeMatches
+        ? 'pass'
+        : 'block',
+
+    details:
+      envelopeMatches
+        ? 'Live Drift y Transaction usan el mismo Migration Gate envelope.'
+        : 'Live Drift y Transaction usan envelopes diferentes del Migration Gate.',
+  });
+
   const guildMatches =
     options.baseline
       .snapshot
@@ -94,6 +115,7 @@ export async function runDriftProtectedPhase(
   const contextValid =
     sessionMatches &&
     gateMatches &&
+    envelopeMatches &&
     guildMatches;
 
   if (

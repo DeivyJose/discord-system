@@ -183,6 +183,9 @@ export function sealExecutionCheckpoint(
       gateFingerprint:
         context.gateFingerprint,
 
+      gateEnvelopeFingerprint:
+        context.gateEnvelopeFingerprint,
+
       phase:
         context.phase,
 
@@ -312,6 +315,25 @@ export function verifyExecutionCheckpointIntegrity(
         expected.gateFingerprint
         ? 'Migration Gate fingerprint coincide.'
         : 'El checkpoint fue generado contra otro Migration Gate.',
+  });
+
+  checks.push({
+    id:
+      'gate_envelope_fingerprint',
+
+    status:
+      sealed.context
+        .gateEnvelopeFingerprint ===
+        expected.gateEnvelopeFingerprint
+        ? 'pass'
+        : 'block',
+
+    details:
+      sealed.context
+        .gateEnvelopeFingerprint ===
+        expected.gateEnvelopeFingerprint
+        ? 'Migration Gate envelope fingerprint coincide.'
+        : 'El checkpoint fue generado contra otro envelope del Migration Gate.',
   });
 
   checks.push({

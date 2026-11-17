@@ -238,6 +238,9 @@ const context:
     gateFingerprint:
       'checkpointed-binding-test-gate',
 
+    gateEnvelopeFingerprint:
+      'checkpointed-binding-test-envelope',
+
     phase:
       'channels',
 
