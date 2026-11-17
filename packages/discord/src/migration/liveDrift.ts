@@ -213,6 +213,41 @@ function readArray(
     : [];
 }
 
+function channelSnapshotIsCategory(
+  value: unknown,
+): boolean {
+  const typeName =
+    readString(
+      value,
+      'typeName',
+    );
+
+  if (
+    typeName ===
+      'GuildCategory'
+  ) {
+    return true;
+  }
+
+  /*
+   * Fallback para snapshots que conserven
+   * solamente el enum numérico de Discord.
+   *
+   * ChannelType.GuildCategory === 4.
+   *
+   * No importamos discord.js aquí para mantener
+   * este módulo de integridad desacoplado del
+   * transporte real.
+   */
+  const object =
+    asObject(
+      value,
+    );
+
+  return object?.type ===
+    4;
+}
+
 function readParentId(
   resource: unknown,
 ): string | null {
@@ -399,11 +434,39 @@ export function normalizeDiscordStructureSnapshot(
     );
   }
 
-  const categories =
+  const rawCategories =
     readArray(
       rawSnapshot,
       'categories',
-    ).map(
+    );
+
+  const rawChannels =
+    readArray(
+      rawSnapshot,
+      'channels',
+    );
+
+  /*
+   * Existen dos formas soportadas:
+   *
+   * 1. Formato sintético/legacy:
+   *    categories[] + channels[]
+   *
+   * 2. Formato real del Inspector:
+   *    channels[] contiene también GuildCategory.
+   *
+   * Si categories[] existe y contiene recursos,
+   * sigue siendo la fuente explícita.
+   */
+  const categorySources =
+    rawCategories.length > 0
+      ? rawCategories
+      : rawChannels.filter(
+          channelSnapshotIsCategory,
+        );
+
+  const categories =
+    categorySources.map(
       (resource) =>
         normalizeResource(
           resource,
@@ -411,17 +474,29 @@ export function normalizeDiscordStructureSnapshot(
         ),
     );
 
+  /*
+   * Una GuildCategory jamás debe terminar
+   * normalizada como channel.
+   *
+   * Esto también evita duplicados si una forma
+   * futura incluye categories[] y conserva las
+   * categorías dentro de channels[].
+   */
   const channels =
-    readArray(
-      rawSnapshot,
-      'channels',
-    ).map(
-      (resource) =>
-        normalizeResource(
-          resource,
-          'channel',
-        ),
-    );
+    rawChannels
+      .filter(
+        (resource) =>
+          !channelSnapshotIsCategory(
+            resource,
+          ),
+      )
+      .map(
+        (resource) =>
+          normalizeResource(
+            resource,
+            'channel',
+          ),
+      );
 
   const roles =
     readArray(

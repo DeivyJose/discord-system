@@ -40,7 +40,8 @@
     "test:content-bound-execution-session": "tsx src/migration/testContentBoundExecutionSession.ts",
     "artifact:blueprint": "tsx src/blueprint/generateArtifact.ts",
     "test:blueprint-fingerprint": "tsx src/blueprint/testArtifactFingerprint.ts",
-    "test:migration-gate-envelope-integrity": "tsx src/migration/testMigrationGateEnvelopeIntegrity.ts"
+    "test:migration-gate-envelope-integrity": "tsx src/migration/testMigrationGateEnvelopeIntegrity.ts",
+    "test:live-drift-inspector-compatibility": "tsx src/migration/testLiveDriftInspectorCompatibility.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",
