@@ -213,7 +213,7 @@ console.log(
 console.log('');
 
 console.log(
-  `Fingerprint Gate v3: ${gate.fingerprint}`,
+  `Content Fingerprint v3: ${gate.fingerprint}`,
 );
 
 console.log('');
