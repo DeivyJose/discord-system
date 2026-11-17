@@ -74,6 +74,7 @@ export interface ExecutionSessionPhase {
 export type ExecutionSessionGateArtifacts =
   Pick<
     MigrationGateFingerprintInput,
+    | 'blueprint'
     | 'snapshot'
     | 'bindings'
     | 'preflight'
@@ -81,7 +82,7 @@ export type ExecutionSessionGateArtifacts =
   >;
 
 export interface ExecutionSessionContentBinding {
-  fingerprintVersion: 2;
+  fingerprintVersion: 3;
 
   expectedGateFingerprint: string;
 
@@ -109,7 +110,7 @@ export interface ExecutionSessionReceiptClaim {
 }
 
 export interface ExecutionSessionPlan {
-  schemaVersion: 3;
+  schemaVersion: 4;
 
   sessionId: string;
 

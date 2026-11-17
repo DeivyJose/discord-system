@@ -7,6 +7,14 @@ import type {
 } from '../inspector/types.js';
 
 import type {
+  DiscordBlueprintArtifact,
+} from '../blueprint/artifact.js';
+
+import {
+  createDiscordBlueprintContentFingerprint,
+} from '../blueprint/artifact.js';
+
+import type {
   DiscordBindings,
 } from './types.js';
 
@@ -35,6 +43,9 @@ const MAXIMUM_SNAPSHOT_AGE_MINUTES =
   30;
 
 export interface MigrationGateFingerprintInput {
+  blueprint:
+    DiscordBlueprintArtifact;
+
   snapshot: DiscordGuildSnapshot;
 
   bindings: DiscordBindings;
@@ -124,21 +135,67 @@ function canonicalJson(
 }
 
 /*
- * Migration Gate Content Fingerprint v2
+ * Migration Gate Content Fingerprint v3
  *
- * Sella exactamente los seis artefactos
- * que hoy recibe createMigrationGate().
+ * Sella siete entradas autorizadas:
  *
- * No se incorpora todavía un fingerprint
- * independiente del Blueprint porque dicho
- * artefacto aún no forma parte de esta API.
+ * - Blueprint Artifact;
+ * - snapshot;
+ * - bindings;
+ * - operations;
+ * - executionPreview;
+ * - preflight;
+ * - hierarchy.
+ *
+ * blueprint.generatedAt se excluye
+ * intencionalmente: la identidad del
+ * Blueprint depende de su contenido y
+ * versiones, no de cuándo fue serializado.
  */
 export function createMigrationGateContentFingerprint(
   input:
     MigrationGateFingerprintInput,
 ): string {
   const payload = {
-    fingerprintVersion: 2,
+    fingerprintVersion: 3,
+
+    blueprint: {
+      schemaVersion:
+        input.blueprint
+          .schemaVersion,
+
+      blueprintVersion:
+        input.blueprint
+          .blueprintVersion,
+
+      fingerprintVersion:
+        input.blueprint
+          .fingerprintVersion,
+
+      fingerprint:
+        input.blueprint
+          .fingerprint,
+
+      categories:
+        input.blueprint
+          .categories,
+
+      channels:
+        input.blueprint
+          .channels,
+
+      roles:
+        input.blueprint
+          .roles,
+
+      summary:
+        input.blueprint
+          .summary,
+
+      executionAllowed:
+        input.blueprint
+          .executionAllowed,
+    },
 
     snapshot:
       input.snapshot,
@@ -161,6 +218,10 @@ export function createMigrationGateContentFingerprint(
     executionBoundary: {
       gateExecutionAllowed:
         false,
+
+      blueprintExecutionAllowed:
+        input.blueprint
+          .executionAllowed,
 
       previewDryRunOnly:
         input.executionPreview
@@ -199,6 +260,81 @@ export function createMigrationGate(
   now = new Date(),
 ): MigrationGate {
   const checks: MigrationGateCheck[] = [];
+
+  const recalculatedBlueprintFingerprint =
+    createDiscordBlueprintContentFingerprint({
+      schemaVersion:
+        input.blueprint.schemaVersion,
+
+      blueprintVersion:
+        input.blueprint.blueprintVersion,
+
+      categories:
+        input.blueprint.categories,
+
+      channels:
+        input.blueprint.channels,
+
+      roles:
+        input.blueprint.roles,
+    });
+
+  const blueprintSummaryValid =
+    input.blueprint.summary
+      .categories ===
+        input.blueprint
+          .categories.length &&
+    input.blueprint.summary
+      .channels ===
+        input.blueprint
+          .channels.length &&
+    input.blueprint.summary
+      .roles ===
+        input.blueprint
+          .roles.length &&
+    input.blueprint.summary
+      .totalResources ===
+        input.blueprint
+          .categories.length +
+        input.blueprint
+          .channels.length +
+        input.blueprint
+          .roles.length;
+
+  const blueprintIntegrityValid =
+    input.blueprint.schemaVersion ===
+      1 &&
+    input.blueprint.blueprintVersion ===
+      1 &&
+    input.blueprint.fingerprintVersion ===
+      1 &&
+    input.blueprint.executionAllowed ===
+      false &&
+    blueprintSummaryValid &&
+    recalculatedBlueprintFingerprint ===
+      input.blueprint.fingerprint;
+
+  checks.push({
+    id:
+      'blueprint_integrity',
+
+    label:
+      'El Blueprint Artifact es íntegro y reproducible.',
+
+    status:
+      blueprintIntegrityValid
+        ? 'pass'
+        : 'block',
+
+    details:
+      blueprintIntegrityValid
+        ? `Blueprint fingerprint confirmado: ${input.blueprint.fingerprint}.`
+        : [
+            'El Blueprint Artifact no es íntegro.',
+            `Declarado=${input.blueprint.fingerprint}.`,
+            `Recalculado=${recalculatedBlueprintFingerprint}.`,
+          ].join(' '),
+  });
 
   const guildIds = [
     input.snapshot.guild.id,
@@ -473,7 +609,7 @@ export function createMigrationGate(
     status: 'pass',
 
     details:
-      'executionAllowed permanece false. La confirmación y el executor todavía no existen.',
+      'executionAllowed permanece false. El Gate no autoriza mutaciones en Discord.',
   });
 
   const pass =
@@ -495,7 +631,7 @@ export function createMigrationGate(
     );
 
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
 
     generatedAt:
       now.toISOString(),
@@ -506,12 +642,37 @@ export function createMigrationGate(
     },
 
     fingerprintVersion:
-      2,
+      3,
 
     fingerprint:
       createMigrationGateContentFingerprint(
         input,
       ),
+
+    blueprint: {
+      schemaVersion:
+        input.blueprint.schemaVersion,
+
+      blueprintVersion:
+        input.blueprint.blueprintVersion,
+
+      fingerprintVersion:
+        input.blueprint.fingerprintVersion,
+
+      fingerprint:
+        input.blueprint.fingerprint,
+
+      generatedAt:
+        input.blueprint.generatedAt,
+
+      summary:
+        structuredClone(
+          input.blueprint.summary,
+        ),
+
+      executionAllowed:
+        false,
+    },
 
     snapshot: {
       capturedAt:

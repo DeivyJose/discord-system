@@ -10,6 +10,10 @@ import type {
   DiscordGuildSnapshot,
 } from '../inspector/types.js';
 
+import {
+  createDiscordBlueprintArtifact,
+} from '../blueprint/artifact.js';
+
 import type {
   MigrationOperationsPlan,
 } from './operationTypes.js';
@@ -66,6 +70,9 @@ console.log(
   '🚧 Evaluando Migration Gate...',
 );
 
+const blueprint =
+  createDiscordBlueprintArtifact();
+
 const snapshot =
   await readJson<DiscordGuildSnapshot>(
     '.data',
@@ -113,6 +120,7 @@ const hierarchy =
 
 const gate =
   createMigrationGate({
+    blueprint,
     snapshot,
     bindings,
     operations,
@@ -199,7 +207,13 @@ console.log(
 console.log('');
 
 console.log(
-  `Fingerprint: ${gate.fingerprint}`,
+  `Blueprint fingerprint: ${gate.blueprint.fingerprint}`,
+);
+
+console.log('');
+
+console.log(
+  `Fingerprint Gate v3: ${gate.fingerprint}`,
 );
 
 console.log('');

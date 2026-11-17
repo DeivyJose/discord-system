@@ -5,6 +5,10 @@ import {
 
 import path from 'node:path';
 
+import {
+  createDiscordBlueprintArtifact,
+} from '../blueprint/artifact.js';
+
 import type {
   DiscordGuildSnapshot,
 } from '../inspector/types.js';
@@ -17,9 +21,9 @@ import type {
   DiscordExecutionPreview,
 } from './executionTypes.js';
 
-import type {
-  MigrationGate,
-} from './migrationGateTypes.js';
+import {
+  createMigrationGate,
+} from './migrationGate.js';
 
 import type {
   DiscordMigrationPreflight,
@@ -102,15 +106,6 @@ const preview =
     'latest.json',
   );
 
-const gate =
-  await readJson<
-    MigrationGate
-  >(
-    '.data',
-    'migration-gate',
-    'latest.json',
-  );
-
 const preflight =
   await readJson<
     DiscordMigrationPreflight
@@ -129,12 +124,43 @@ const hierarchy =
     'latest.json',
   );
 
+const blueprint =
+  createDiscordBlueprintArtifact(
+    new Date(
+      '2026-01-01T00:00:00.000Z',
+    ),
+  );
+
 const gateArtifacts = {
+  blueprint,
   snapshot,
   bindings,
   preflight,
   hierarchy,
 };
+
+const syntheticGateTime =
+  new Date(
+    new Date(
+      snapshot.capturedAt,
+    ).getTime() +
+    60_000,
+  );
+
+const gate =
+  createMigrationGate(
+    {
+      blueprint,
+      snapshot,
+      bindings,
+      operations,
+      executionPreview:
+        preview,
+      preflight,
+      hierarchy,
+    },
+    syntheticGateTime,
+  );
 
 const manifestTime =
   new Date(
@@ -246,7 +272,7 @@ const firstCreated =
     'ready' &&
   first.session
     .schemaVersion ===
-    3 &&
+    4 &&
   first.session
     .receiptClaim
     ?.receiptId ===

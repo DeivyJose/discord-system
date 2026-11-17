@@ -202,6 +202,9 @@ export function createExecutionSessionPlan(
 
   const recalculatedGateFingerprint =
     createMigrationGateContentFingerprint({
+      blueprint:
+        gateArtifacts.blueprint,
+
       snapshot:
         gateArtifacts.snapshot,
 
@@ -220,11 +223,28 @@ export function createExecutionSessionPlan(
         gateArtifacts.hierarchy,
     });
 
+  const gateBlueprintMatches =
+    gate.blueprint.schemaVersion ===
+      gateArtifacts.blueprint
+        .schemaVersion &&
+    gate.blueprint.blueprintVersion ===
+      gateArtifacts.blueprint
+        .blueprintVersion &&
+    gate.blueprint.fingerprintVersion ===
+      gateArtifacts.blueprint
+        .fingerprintVersion &&
+    gate.blueprint.fingerprint ===
+      gateArtifacts.blueprint
+        .fingerprint &&
+    gate.blueprint.executionAllowed ===
+      false;
+
   const gateContentMatches =
     gate.schemaVersion ===
-      2 &&
+      3 &&
     gate.fingerprintVersion ===
-      2 &&
+      3 &&
+    gateBlueprintMatches &&
     recalculatedGateFingerprint ===
       gate.fingerprint;
 
@@ -239,7 +259,7 @@ export function createExecutionSessionPlan(
 
     details:
       gateContentMatches
-        ? 'Los seis artefactos actuales reproducen exactamente el fingerprint del Migration Gate v2.'
+        ? 'Los siete inputs actuales reproducen exactamente el fingerprint del Migration Gate v3.'
         : [
             'Los artefactos actuales NO reproducen el Migration Gate autorizado.',
             `Esperado=${gate.fingerprint}.`,
@@ -903,7 +923,7 @@ export function createExecutionSessionPlan(
     blockChecks === 0;
 
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
 
     sessionId,
 
@@ -925,7 +945,7 @@ export function createExecutionSessionPlan(
 
     contentBinding: {
       fingerprintVersion:
-        2,
+        3,
 
       expectedGateFingerprint:
         gate.fingerprint,

@@ -8,6 +8,10 @@ import type {
   DiscordGuildSnapshot,
 } from '../inspector/types.js';
 
+import {
+  createDiscordBlueprintArtifact,
+} from '../blueprint/artifact.js';
+
 import type {
   DiscordExecutionPreview,
 } from './executionTypes.js';
@@ -152,6 +156,13 @@ const hierarchy =
     'latest.json',
   );
 
+const blueprint =
+  createDiscordBlueprintArtifact(
+    new Date(
+      '2026-01-01T00:00:00.000Z',
+    ),
+  );
+
 /*
  * Usamos una hora sintética cercana al snapshot.
  * Esta prueba estudia el fingerprint, no la
@@ -168,6 +179,8 @@ const syntheticNow =
 const baseline =
   createMigrationGate(
     {
+      blueprint,
+
       snapshot,
 
       bindings,
@@ -185,9 +198,11 @@ const baseline =
 
 const fingerprintFormatValid =
   baseline.schemaVersion ===
-    2 &&
+    3 &&
   baseline.fingerprintVersion ===
-    2 &&
+    3 &&
+  baseline.blueprint.fingerprint ===
+    blueprint.fingerprint &&
   /^[a-f0-9]{64}$/i.test(
     baseline.fingerprint,
   ) &&
@@ -231,6 +246,8 @@ renamedOperation.desiredName =
 const operationGate =
   createMigrationGate(
     {
+      blueprint,
+
       snapshot,
 
       bindings,
@@ -289,6 +306,8 @@ reorderedOperations
 const orderGate =
   createMigrationGate(
     {
+      blueprint,
+
       snapshot,
 
       bindings,
@@ -340,6 +359,8 @@ changedBindings.resources[
 const bindingGate =
   createMigrationGate(
     {
+      blueprint,
+
       snapshot,
 
       bindings:
@@ -387,6 +408,8 @@ previewStep.label =
 const previewGate =
   createMigrationGate(
     {
+      blueprint,
+
       snapshot,
 
       bindings,
@@ -434,6 +457,8 @@ snapshotChannel.name =
 const snapshotGate =
   createMigrationGate(
     {
+      blueprint,
+
       snapshot:
         changedSnapshot,
 
@@ -474,6 +499,8 @@ changedPreflight
 const preflightGate =
   createMigrationGate(
     {
+      blueprint,
+
       snapshot,
 
       bindings,
@@ -521,6 +548,8 @@ hierarchyRole.desiredName =
 const hierarchyGate =
   createMigrationGate(
     {
+      blueprint,
+
       snapshot,
 
       bindings,
@@ -543,6 +572,65 @@ const changedHierarchyDetected =
 
 /*
  * ============================================
+ * ATTACK 8 — BLUEPRINT
+ * ============================================
+ */
+const changedBlueprint =
+  structuredClone(
+    blueprint,
+  );
+
+const blueprintCategory =
+  changedBlueprint.categories[0];
+
+if (
+  !blueprintCategory
+) {
+  throw new Error(
+    'Blueprint sin categorías.',
+  );
+}
+
+blueprintCategory.name =
+  `${blueprintCategory.name}-TAMPERED`;
+
+const blueprintGate =
+  createMigrationGate(
+    {
+      blueprint:
+        changedBlueprint,
+
+      snapshot,
+
+      bindings,
+
+      operations,
+
+      executionPreview,
+
+      preflight,
+
+      hierarchy,
+    },
+    syntheticNow,
+  );
+
+const blueprintIntegrityCheck =
+  blueprintGate.checks.find(
+    (check) =>
+      check.id ===
+        'blueprint_integrity',
+  );
+
+const changedBlueprintDetected =
+  blueprintGate.fingerprint !==
+    baseline.fingerprint &&
+  blueprintIntegrityCheck
+    ?.status ===
+    'block';
+
+/*
+ * ============================================
  * CANONICALIZATION TEST
  *
  * Cambiamos solamente orden de claves de
@@ -552,6 +640,8 @@ const changedHierarchyDetected =
 const canonicalGate =
   createMigrationGate(
     {
+      blueprint,
+
       snapshot:
         reorderObjectKeys(
           snapshot,
@@ -597,6 +687,8 @@ const objectKeyOrderIndependent =
 const laterGate =
   createMigrationGate(
     {
+      blueprint,
+
       snapshot,
 
       bindings,
@@ -619,6 +711,38 @@ const generationTimeIndependent =
   laterGate.fingerprint ===
     baseline.fingerprint;
 
+const laterBlueprint =
+  createDiscordBlueprintArtifact(
+    new Date(
+      '2026-02-01T00:00:00.000Z',
+    ),
+  );
+
+const blueprintTimeGate =
+  createMigrationGate(
+    {
+      blueprint:
+        laterBlueprint,
+
+      snapshot,
+
+      bindings,
+
+      operations,
+
+      executionPreview,
+
+      preflight,
+
+      hierarchy,
+    },
+    syntheticNow,
+  );
+
+const blueprintGenerationTimeIndependent =
+  blueprintTimeGate.fingerprint ===
+    baseline.fingerprint;
+
 const success =
   fingerprintFormatValid &&
   changedOperationDetected &&
@@ -628,12 +752,14 @@ const success =
   changedSnapshotDetected &&
   changedPreflightDetected &&
   changedHierarchyDetected &&
+  changedBlueprintDetected &&
   objectKeyOrderIndependent &&
-  generationTimeIndependent;
+  generationTimeIndependent &&
+  blueprintGenerationTimeIndependent;
 
 console.log('');
 console.log(
-  '🔐 Migration Gate Content Fingerprint v2',
+  '🔐 Migration Gate Content Fingerprint v3',
 );
 console.log('');
 
@@ -671,6 +797,10 @@ console.log(
   `Hierarchy alterada detectada: ${changedHierarchyDetected ? 'SÍ' : 'NO'}`,
 );
 
+console.log(
+  `Blueprint alterado detectado: ${changedBlueprintDetected ? 'SÍ' : 'NO'}`,
+);
+
 console.log('');
 
 console.log(
@@ -679,6 +809,10 @@ console.log(
 
 console.log(
   `Hora de generación independiente: ${generationTimeIndependent ? 'SÍ' : 'NO'}`,
+);
+
+console.log(
+  `Hora de Blueprint independiente: ${blueprintGenerationTimeIndependent ? 'SÍ' : 'NO'}`,
 );
 
 console.log('');

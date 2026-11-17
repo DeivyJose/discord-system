@@ -5,6 +5,10 @@ import {
 
 import path from 'node:path';
 
+import {
+  createDiscordBlueprintArtifact,
+} from '../blueprint/artifact.js';
+
 import type {
   DiscordGuildSnapshot,
 } from '../inspector/types.js';
@@ -17,9 +21,9 @@ import type {
   DiscordExecutionPreview,
 } from './executionTypes.js';
 
-import type {
-  MigrationGate,
-} from './migrationGateTypes.js';
+import {
+  createMigrationGate,
+} from './migrationGate.js';
 
 import type {
   DiscordMigrationPreflight,
@@ -120,16 +124,38 @@ const hierarchy =
     'latest.json',
   );
 
+const blueprint =
+  createDiscordBlueprintArtifact(
+    new Date(
+      '2026-01-01T00:00:00.000Z',
+    ),
+  );
+
+const syntheticGateTime =
+  new Date(
+    new Date(
+      snapshot.capturedAt,
+    ).getTime() +
+    60_000,
+  );
+
 const gate =
-  await readJson<
-    MigrationGate
-  >(
-    '.data',
-    'migration-gate',
-    'latest.json',
+  createMigrationGate(
+    {
+      blueprint,
+      snapshot,
+      bindings,
+      operations,
+      executionPreview:
+        preview,
+      preflight,
+      hierarchy,
+    },
+    syntheticGateTime,
   );
 
 const gateArtifacts = {
+  blueprint,
   snapshot,
   bindings,
   preflight,
@@ -460,12 +486,81 @@ const bindingsTamperBlocked =
     ?.status ===
     'block';
 
+/*
+ * TAMPER 4:
+ * El Blueprint cambia después del Gate.
+ */
+const tamperedBlueprintArtifacts =
+  structuredClone(
+    gateArtifacts,
+  );
+
+const tamperedCategory =
+  tamperedBlueprintArtifacts
+    .blueprint
+    .categories[0];
+
+if (
+  !tamperedCategory
+) {
+  throw new Error(
+    'Blueprint sin categorías para tamper test.',
+  );
+}
+
+tamperedCategory.name =
+  `${tamperedCategory.name}-TAMPERED`;
+
+const blueprintTamper =
+  await createSingleUseExecutionSession({
+    operations,
+    preview,
+    gate,
+    receipt,
+
+    gateArtifacts:
+      tamperedBlueprintArtifacts,
+
+    claimsDirectory:
+      path.join(
+        testRoot,
+        'blueprint-tamper',
+      ),
+
+    now:
+      sessionTime,
+  });
+
+const blueprintBindingCheck =
+  blueprintTamper.preflight
+    .checks.find(
+      (check) =>
+        check.id ===
+          'gate_content_binding',
+    );
+
+const blueprintTamperBlocked =
+  blueprintTamper.status ===
+    'blocked' &&
+  blueprintTamper.blockReason ===
+    'validation_failed' &&
+  !blueprintTamper
+    .receiptClaimed &&
+  blueprintTamper
+    .claimMarkerPath ===
+    null &&
+  blueprintBindingCheck
+    ?.status ===
+    'block';
+
 const receiptProtectedBeforeClaim =
   !operationTamper
     .receiptClaimed &&
   !previewTamper
     .receiptClaimed &&
   !bindingsTamper
+    .receiptClaimed &&
+  !blueprintTamper
     .receiptClaimed;
 
 const executionStillDisabled =
@@ -482,6 +577,9 @@ const executionStillDisabled =
     false &&
   bindingsTamper
     .executionAllowed ===
+    false &&
+  blueprintTamper
+    .executionAllowed ===
     false;
 
 const success =
@@ -489,6 +587,7 @@ const success =
   operationTamperBlocked &&
   previewTamperBlocked &&
   bindingsTamperBlocked &&
+  blueprintTamperBlocked &&
   receiptProtectedBeforeClaim &&
   executionStillDisabled;
 
@@ -499,7 +598,7 @@ console.log(
 console.log('');
 
 console.log(
-  `Baseline reproduce Gate v2: ${baselinePasses ? 'SÍ' : 'NO'}`,
+  `Baseline reproduce Gate v3: ${baselinePasses ? 'SÍ' : 'NO'}`,
 );
 
 console.log(
@@ -512,6 +611,10 @@ console.log(
 
 console.log(
   `Bindings modificados bloqueados: ${bindingsTamperBlocked ? 'SÍ' : 'NO'}`,
+);
+
+console.log(
+  `Blueprint modificado bloqueado: ${blueprintTamperBlocked ? 'SÍ' : 'NO'}`,
 );
 
 console.log('');

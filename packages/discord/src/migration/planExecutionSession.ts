@@ -10,6 +10,10 @@ import type {
   DiscordGuildSnapshot,
 } from '../inspector/types.js';
 
+import {
+  createDiscordBlueprintArtifact,
+} from '../blueprint/artifact.js';
+
 import type {
   MigrationOperationsPlan,
 } from './operationTypes.js';
@@ -70,6 +74,9 @@ console.log('');
 console.log(
   '🧱 Generando Execution Session Plan...',
 );
+
+const blueprint =
+  createDiscordBlueprintArtifact();
 
 const snapshot =
   await readJson<DiscordGuildSnapshot>(
@@ -138,6 +145,7 @@ const creation =
     receipt,
 
     gateArtifacts: {
+      blueprint,
       snapshot,
       bindings,
       preflight,
