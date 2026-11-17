@@ -272,7 +272,7 @@ const firstCreated =
     'ready' &&
   first.session
     .schemaVersion ===
-    4 &&
+    5 &&
   first.session
     .receiptClaim
     ?.receiptId ===
@@ -285,7 +285,11 @@ const firstCreated =
   first.session
     .receiptClaim
     ?.gateFingerprint ===
-    gate.fingerprint;
+    gate.fingerprint &&
+  first.session
+    .receiptClaim
+    ?.gateEnvelopeFingerprint ===
+    gate.envelopeFingerprint;
 
 const second =
   await createSingleUseExecutionSession({

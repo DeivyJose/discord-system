@@ -15,7 +15,7 @@ export interface ConfirmationManifestCheck {
 }
 
 export interface ConfirmationManifest {
-  schemaVersion: 1;
+  schemaVersion: 2;
 
   createdAt: string;
 
@@ -30,7 +30,11 @@ export interface ConfirmationManifest {
 
   gateFingerprint: string;
 
+  gateEnvelopeFingerprint: string;
+
   shortFingerprint: string;
+
+  shortEnvelopeFingerprint: string;
 
   snapshotCapturedAt: string;
 

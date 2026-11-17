@@ -118,12 +118,15 @@ export type {
 } from './migration/migrationGateTypes.js';
 
 export type {
+  MigrationGateEnvelopeFingerprintInput,
   MigrationGateFingerprintInput,
 } from './migration/migrationGate.js';
 
 export {
   createMigrationGate,
   createMigrationGateContentFingerprint,
+  createMigrationGateEnvelopeFingerprint,
+  extractMigrationGateEnvelopeFingerprintInput,
 } from './migration/migrationGate.js';
 
 export {

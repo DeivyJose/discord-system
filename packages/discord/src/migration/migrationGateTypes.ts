@@ -14,7 +14,7 @@ export interface MigrationGateCheck {
 }
 
 export interface MigrationGate {
-  schemaVersion: 3;
+  schemaVersion: 4;
 
   generatedAt: string;
 
@@ -31,6 +31,14 @@ export interface MigrationGate {
   fingerprintVersion: 3;
 
   fingerprint: string;
+
+  /**
+   * Protege el envelope serializado del Gate:
+   * metadata, checks, summary y content fingerprint.
+   */
+  envelopeFingerprintVersion: 1;
+
+  envelopeFingerprint: string;
 
   blueprint: {
     schemaVersion: 1;

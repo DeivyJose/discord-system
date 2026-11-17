@@ -213,6 +213,10 @@ export async function createSingleUseExecutionSession(
         options.gate
           .fingerprint,
 
+      gateEnvelopeFingerprint:
+        options.gate
+          .envelopeFingerprint,
+
       confirmationId,
 
       claimedAt:

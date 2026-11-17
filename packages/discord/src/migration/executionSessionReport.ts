@@ -18,7 +18,8 @@ export function renderExecutionSessionPlan(
     '',
     'AUTORIZACIÓN DE ORIGEN',
     '----------------------',
-    `Gate fingerprint: ${session.gateFingerprint}`,
+    `Gate content fingerprint: ${session.gateFingerprint}`,
+    `Gate envelope fingerprint: ${session.gateEnvelopeFingerprint}`,
     `Content-bound al Gate: ${
       session.contentBinding.matchesGate
         ? 'SÍ'
@@ -26,22 +27,14 @@ export function renderExecutionSessionPlan(
     }`,
     `Fingerprint recalculado: ${session.contentBinding.recalculatedGateFingerprint}`,
     `Fingerprint version: ${session.contentBinding.fingerprintVersion}`,
-    `Approval Receipt: ${session.approvalReceiptId}`,
-    `Receipt claim: ${
-      session.receiptClaim
+    `Envelope-bound al Gate: ${
+      session.envelopeBinding.matchesGate
         ? 'SÍ'
         : 'NO'
     }`,
-    `Confirmation ID: ${
-      session.receiptClaim
-        ?.confirmationId ??
-      '(sin claim)'
-    }`,
-    `Receipt reclamado: ${
-      session.receiptClaim
-        ?.claimedAt ??
-      '(sin claim)'
-    }`,
+    `Envelope recalculado: ${session.envelopeBinding.recalculatedGateEnvelopeFingerprint}`,
+    `Envelope version: ${session.envelopeBinding.fingerprintVersion}`,
+    `Approval Receipt: ${session.approvalReceiptId}`,
     `Receipt claim: ${
       session.receiptClaim
         ? 'SÍ'

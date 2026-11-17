@@ -1,13 +1,43 @@
 import {
-  mkdir,
   readFile,
+  rm,
 } from 'node:fs/promises';
 
 import path from 'node:path';
 
 import type {
-  MigrationGate,
-} from './migrationGateTypes.js';
+  DiscordGuildSnapshot,
+} from '../inspector/types.js';
+
+import {
+  createDiscordBlueprintArtifact,
+} from '../blueprint/artifact.js';
+
+import type {
+  MigrationOperationsPlan,
+} from './operationTypes.js';
+
+import type {
+  DiscordExecutionPreview,
+} from './executionTypes.js';
+
+import type {
+  DiscordMigrationPreflight,
+} from './preflightTypes.js';
+
+import type {
+  HierarchyBootstrapPlan,
+} from './hierarchyBootstrapTypes.js';
+
+import type {
+  DiscordBindings,
+} from './types.js';
+
+import {
+  createMigrationGate,
+  createMigrationGateEnvelopeFingerprint,
+  extractMigrationGateEnvelopeFingerprintInput,
+} from './migrationGate.js';
 
 import {
   createConfirmationManifest,
@@ -27,29 +57,106 @@ const projectRoot =
     '../..',
   );
 
-const gate =
-  JSON.parse(
+async function readJson<T>(
+  ...segments: string[]
+): Promise<T> {
+  return JSON.parse(
     await readFile(
       path.join(
         projectRoot,
-        '.data',
-        'migration-gate',
-        'latest.json',
+        ...segments,
       ),
       'utf8',
     ),
-  ) as MigrationGate;
+  ) as T;
+}
 
-/*
- * Tiempo sintético dentro de la ventana
- * del Gate. Esta prueba no reutiliza una
- * autorización histórica real.
- */
-const manifestTime =
+const snapshot =
+  await readJson<
+    DiscordGuildSnapshot
+  >(
+    '.data',
+    'discord-snapshots',
+    'latest.json',
+  );
+
+const bindings =
+  await readJson<
+    DiscordBindings
+  >(
+    '.data',
+    'discord-bindings.json',
+  );
+
+const operations =
+  await readJson<
+    MigrationOperationsPlan
+  >(
+    '.data',
+    'migration-operations',
+    'latest.json',
+  );
+
+const preview =
+  await readJson<
+    DiscordExecutionPreview
+  >(
+    '.data',
+    'execution-preview',
+    'latest.json',
+  );
+
+const preflight =
+  await readJson<
+    DiscordMigrationPreflight
+  >(
+    '.data',
+    'migration-preflight',
+    'latest.json',
+  );
+
+const hierarchy =
+  await readJson<
+    HierarchyBootstrapPlan
+  >(
+    '.data',
+    'hierarchy-bootstrap',
+    'latest.json',
+  );
+
+const blueprint =
+  createDiscordBlueprintArtifact(
+    new Date(
+      '2026-01-01T00:00:00.000Z',
+    ),
+  );
+
+const gateTime =
   new Date(
     new Date(
-      gate.generatedAt,
+      snapshot.capturedAt,
     ).getTime() +
+    60_000,
+  );
+
+const gate =
+  createMigrationGate(
+    {
+      blueprint,
+      snapshot,
+      bindings,
+      operations,
+      executionPreview:
+        preview,
+      preflight,
+      hierarchy,
+    },
+    gateTime,
+  );
+
+const manifestTime =
+  new Date(
+    gateTime.getTime() +
     1_000,
   );
 
@@ -67,9 +174,17 @@ if (
   !manifest.confirmationId
 ) {
   throw new Error(
-    'No fue posible crear un Manifest válido para la prueba.',
+    'No fue posible crear un Manifest válido.',
   );
 }
+
+const phraseBindsEnvelope =
+  phrase.includes(
+    gate.envelopeFingerprint.slice(
+      0,
+      12,
+    ),
+  );
 
 const verifyTime =
   new Date(
@@ -101,12 +216,20 @@ const approved =
   );
 
 const validInteractivePasses =
+  gate.schemaVersion ===
+    4 &&
+  manifest.schemaVersion ===
+    2 &&
+  approved.schemaVersion ===
+    3 &&
   approved.status ===
     'approved' &&
   approved.summary
     .approvalValid &&
-  approved.schemaVersion ===
-    2;
+  approved.gateFingerprint ===
+    gate.fingerprint &&
+  approved.gateEnvelopeFingerprint ===
+    gate.envelopeFingerprint;
 
 const pipedInput =
   verifyConfirmationManifest(
@@ -115,7 +238,6 @@ const pipedInput =
     phrase,
     {
       ...interactiveEvidence,
-
       inputIsTTY:
         false,
     },
@@ -135,7 +257,6 @@ const redirectedOutput =
     phrase,
     {
       ...interactiveEvidence,
-
       outputIsTTY:
         false,
     },
@@ -170,7 +291,6 @@ const alreadyUsed =
     phrase,
     {
       ...interactiveEvidence,
-
       confirmationUnused:
         false,
     },
@@ -183,20 +303,88 @@ const usedEvidenceBlocked =
   !alreadyUsed.summary
     .approvalValid;
 
-const claimsDirectory =
+/*
+ * Ataque 1:
+ * cambia el envelope sin actualizar el seal.
+ */
+const tamperedGate =
+  structuredClone(
+    gate,
+  );
+
+tamperedGate.summary.pass +=
+  1;
+
+const staleEnvelope =
+  verifyConfirmationManifest(
+    manifest,
+    tamperedGate,
+    phrase,
+    interactiveEvidence,
+    verifyTime,
+  );
+
+const staleEnvelopeBlocked =
+  staleEnvelope.status ===
+    'rejected' &&
+  !staleEnvelope.summary
+    .approvalValid;
+
+/*
+ * Ataque 2:
+ * el atacante recalcula el seal después
+ * de modificar el Gate.
+ *
+ * El Manifest sigue ligado al envelope
+ * original y debe rechazarlo.
+ */
+const resealedGate =
+  structuredClone(
+    tamperedGate,
+  );
+
+resealedGate.envelopeFingerprint =
+  createMigrationGateEnvelopeFingerprint(
+    extractMigrationGateEnvelopeFingerprintInput(
+      resealedGate,
+    ),
+  );
+
+const resealedEnvelope =
+  verifyConfirmationManifest(
+    manifest,
+    resealedGate,
+    phrase,
+    interactiveEvidence,
+    verifyTime,
+  );
+
+const resealedAfterManifestBlocked =
+  resealedEnvelope.status ===
+    'rejected' &&
+  !resealedEnvelope.summary
+    .approvalValid;
+
+const testRoot =
   path.join(
     projectRoot,
     '.data',
-    'explicit-approval-boundary-test',
-    'claims',
+    'explicit-approval-boundary-test-v3',
   );
 
-await mkdir(
-  claimsDirectory,
+await rm(
+  testRoot,
   {
     recursive: true,
+    force: true,
   },
 );
+
+const claimsDirectory =
+  path.join(
+    testRoot,
+    'claims',
+  );
 
 const firstClaim =
   await claimApprovalConfirmation({
@@ -208,6 +396,9 @@ const firstClaim =
 
     gateFingerprint:
       gate.fingerprint,
+
+    gateEnvelopeFingerprint:
+      gate.envelopeFingerprint,
 
     receiptId:
       approved.receiptId,
@@ -226,6 +417,9 @@ const secondClaim =
 
     gateFingerprint:
       gate.fingerprint,
+
+    gateEnvelopeFingerprint:
+      gate.envelopeFingerprint,
 
     receiptId:
       approved.receiptId,
@@ -246,31 +440,42 @@ const receiptDoesNotStorePhrase =
   );
 
 const executionStillDisabled =
+  gate.executionAllowed ===
+    false &&
+  manifest.executionAllowed ===
+    false &&
   approved.executionAllowed ===
     false &&
-  pipedInput.executionAllowed ===
+  staleEnvelope.executionAllowed ===
     false &&
-  alreadyUsed.executionAllowed ===
+  resealedEnvelope.executionAllowed ===
     false;
 
 const success =
   validInteractivePasses &&
+  phraseBindsEnvelope &&
   pipedInputBlocked &&
   redirectedOutputBlocked &&
   wrongPhraseBlocked &&
   usedEvidenceBlocked &&
+  staleEnvelopeBlocked &&
+  resealedAfterManifestBlocked &&
   atomicSingleUsePasses &&
   receiptDoesNotStorePhrase &&
   executionStillDisabled;
 
 console.log('');
 console.log(
-  '🔏 Explicit Approval Boundary v2',
+  '🔏 Explicit Approval Boundary v3',
 );
 console.log('');
 
 console.log(
   `Aprobación interactiva válida: ${validInteractivePasses ? 'SÍ' : 'NO'}`,
+);
+
+console.log(
+  `Frase liga Envelope: ${phraseBindsEnvelope ? 'SÍ' : 'NO'}`,
 );
 
 console.log(
@@ -292,6 +497,16 @@ console.log(
 console.log('');
 
 console.log(
+  `Envelope alterado bloqueado: ${staleEnvelopeBlocked ? 'SÍ' : 'NO'}`,
+);
+
+console.log(
+  `Envelope resealed tras Manifest bloqueado: ${resealedAfterManifestBlocked ? 'SÍ' : 'NO'}`,
+);
+
+console.log('');
+
+console.log(
   `Primer claim atómico: ${firstClaim.claimed ? 'SÍ' : 'NO'}`,
 );
 
@@ -300,7 +515,7 @@ console.log(
 );
 
 console.log(
-  `Receipt no almacena la frase: ${receiptDoesNotStorePhrase ? 'SÍ' : 'NO'}`,
+  `Receipt no almacena frase: ${receiptDoesNotStorePhrase ? 'SÍ' : 'NO'}`,
 );
 
 console.log('');

@@ -12,6 +12,8 @@ export interface ApprovalConsumptionOptions {
 
   gateFingerprint: string;
 
+  gateEnvelopeFingerprint: string;
+
   receiptId: string;
 
   claimedAt: string;
@@ -64,6 +66,12 @@ export async function claimApprovalConfirmation(
   );
 
   assertHex(
+    options.gateEnvelopeFingerprint,
+    64,
+    'gateEnvelopeFingerprint',
+  );
+
+  assertHex(
     options.receiptId,
     24,
     'receiptId',
@@ -100,13 +108,16 @@ export async function claimApprovalConfirmation(
     await handle.writeFile(
       JSON.stringify(
         {
-          schemaVersion: 1,
+          schemaVersion: 2,
 
           confirmationId:
             options.confirmationId,
 
           gateFingerprint:
             options.gateFingerprint,
+
+          gateEnvelopeFingerprint:
+            options.gateEnvelopeFingerprint,
 
           receiptId:
             options.receiptId,

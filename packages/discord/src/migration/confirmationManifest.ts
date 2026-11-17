@@ -6,6 +6,11 @@ import type {
   MigrationGate,
 } from './migrationGateTypes.js';
 
+import {
+  createMigrationGateEnvelopeFingerprint,
+  extractMigrationGateEnvelopeFingerprintInput,
+} from './migrationGate.js';
+
 import type {
   ConfirmationManifest,
   ConfirmationManifestCheck,
@@ -30,6 +35,43 @@ export function createConfirmationManifest(
 ): ConfirmationManifest {
   const checks:
     ConfirmationManifestCheck[] = [];
+
+  const recalculatedGateEnvelopeFingerprint =
+    createMigrationGateEnvelopeFingerprint(
+      extractMigrationGateEnvelopeFingerprintInput(
+        gate,
+      ),
+    );
+
+  const gateEnvelopeValid =
+    gate.schemaVersion ===
+      4 &&
+    gate.envelopeFingerprintVersion ===
+      1 &&
+    /^[a-f0-9]{64}$/i.test(
+      gate.envelopeFingerprint,
+    ) &&
+    recalculatedGateEnvelopeFingerprint ===
+      gate.envelopeFingerprint;
+
+  checks.push({
+    id:
+      'gate_envelope_integrity',
+
+    status:
+      gateEnvelopeValid
+        ? 'pass'
+        : 'block',
+
+    details:
+      gateEnvelopeValid
+        ? 'El envelope del Migration Gate es íntegro.'
+        : [
+            'El envelope del Migration Gate NO es íntegro.',
+            `Esperado=${gate.envelopeFingerprint}.`,
+            `Recalculado=${recalculatedGateEnvelopeFingerprint}.`,
+          ].join(' '),
+  });
 
   const gateReady =
     gate.summary.block === 0 &&
@@ -129,6 +171,13 @@ export function createConfirmationManifest(
       12,
     );
 
+  const shortEnvelopeFingerprint =
+    gate.envelopeFingerprint
+      .slice(
+        0,
+        12,
+      );
+
   const confirmationId =
     readyForUserApproval
       ? randomBytes(8)
@@ -140,12 +189,13 @@ export function createConfirmationManifest(
       ? [
           'CONFIRM THE CLOCK',
           shortFingerprint,
+          shortEnvelopeFingerprint,
           confirmationId,
         ].join(' ')
       : null;
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
 
     createdAt:
       now.toISOString(),
@@ -168,7 +218,12 @@ export function createConfirmationManifest(
     gateFingerprint:
       gate.fingerprint,
 
+    gateEnvelopeFingerprint:
+      gate.envelopeFingerprint,
+
     shortFingerprint,
+
+    shortEnvelopeFingerprint,
 
     snapshotCapturedAt:
       gate.snapshot.capturedAt,

@@ -18,7 +18,8 @@ export function renderApprovalReceipt(
     '',
     'PLAN AUTORIZADO',
     '---------------',
-    `Fingerprint: ${receipt.gateFingerprint}`,
+    `Content fingerprint: ${receipt.gateFingerprint}`,
+    `Envelope fingerprint: ${receipt.gateEnvelopeFingerprint}`,
     `Método de aprobación: ${receipt.approvalBoundary.method}`,
     `Terminal interactiva: ${
       receipt.approvalBoundary.inputIsTTY &&

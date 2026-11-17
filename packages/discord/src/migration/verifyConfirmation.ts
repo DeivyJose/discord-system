@@ -81,7 +81,11 @@ const manifest =
 
 console.log('');
 console.log(
-  `Fingerprint: ${gate.fingerprint}`,
+  `Content fingerprint: ${gate.fingerprint}`,
+);
+
+console.log(
+  `Envelope fingerprint: ${gate.envelopeFingerprint}`,
 );
 
 console.log(
@@ -188,6 +192,9 @@ if (
 
       gateFingerprint:
         gate.fingerprint,
+
+      gateEnvelopeFingerprint:
+        gate.envelopeFingerprint,
 
       receiptId:
         receipt.receiptId,

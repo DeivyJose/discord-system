@@ -93,6 +93,18 @@ export interface ExecutionSessionContentBinding {
   executionAllowed: false;
 }
 
+export interface ExecutionSessionEnvelopeBinding {
+  fingerprintVersion: 1;
+
+  expectedGateEnvelopeFingerprint: string;
+
+  recalculatedGateEnvelopeFingerprint: string;
+
+  matchesGate: boolean;
+
+  executionAllowed: false;
+}
+
 export interface ExecutionSessionReceiptClaim {
   claimed: true;
 
@@ -102,6 +114,8 @@ export interface ExecutionSessionReceiptClaim {
 
   gateFingerprint: string;
 
+  gateEnvelopeFingerprint: string;
+
   confirmationId: string;
 
   claimedAt: string;
@@ -110,7 +124,7 @@ export interface ExecutionSessionReceiptClaim {
 }
 
 export interface ExecutionSessionPlan {
-  schemaVersion: 4;
+  schemaVersion: 5;
 
   sessionId: string;
 
@@ -126,8 +140,13 @@ export interface ExecutionSessionPlan {
 
   gateFingerprint: string;
 
+  gateEnvelopeFingerprint: string;
+
   contentBinding:
     ExecutionSessionContentBinding;
+
+  envelopeBinding:
+    ExecutionSessionEnvelopeBinding;
 
   approvalReceiptId: string;
 

@@ -198,9 +198,14 @@ const baseline =
 
 const fingerprintFormatValid =
   baseline.schemaVersion ===
-    3 &&
+    4 &&
   baseline.fingerprintVersion ===
     3 &&
+  baseline.envelopeFingerprintVersion ===
+    1 &&
+  /^[a-f0-9]{64}$/i.test(
+    baseline.envelopeFingerprint,
+  ) &&
   baseline.blueprint.fingerprint ===
     blueprint.fingerprint &&
   /^[a-f0-9]{64}$/i.test(

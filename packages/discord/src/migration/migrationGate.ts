@@ -59,6 +59,13 @@ export interface MigrationGateFingerprintInput {
   hierarchy: HierarchyBootstrapPlan;
 }
 
+export type MigrationGateEnvelopeFingerprintInput =
+  Omit<
+    MigrationGate,
+    | 'envelopeFingerprintVersion'
+    | 'envelopeFingerprint'
+  >;
+
 function countStatus(
   checks: MigrationGateCheck[],
   status: MigrationGateCheck['status'],
@@ -253,6 +260,96 @@ export function createMigrationGateContentFingerprint(
     .digest(
       'hex',
     );
+}
+
+/*
+ * Migration Gate Envelope Fingerprint v1
+ *
+ * A diferencia del Content Fingerprint,
+ * este seal identifica el Gate serializado:
+ *
+ * - generatedAt;
+ * - guild;
+ * - content fingerprint;
+ * - metadata del Blueprint;
+ * - metadata del snapshot;
+ * - checks;
+ * - summary;
+ * - execution boundary.
+ *
+ * El propio envelopeFingerprint queda fuera
+ * para evitar autorreferencia.
+ */
+export function createMigrationGateEnvelopeFingerprint(
+  input:
+    MigrationGateEnvelopeFingerprintInput,
+): string {
+  const payload = {
+    envelopeFingerprintVersion:
+      1,
+
+    gate:
+      input,
+  };
+
+  return createHash(
+    'sha256',
+  )
+    .update(
+      canonicalJson(
+        payload,
+      ),
+      'utf8',
+    )
+    .digest(
+      'hex',
+    );
+}
+
+export function extractMigrationGateEnvelopeFingerprintInput(
+  gate: MigrationGate,
+): MigrationGateEnvelopeFingerprintInput {
+  return {
+    schemaVersion:
+      gate.schemaVersion,
+
+    generatedAt:
+      gate.generatedAt,
+
+    guild:
+      structuredClone(
+        gate.guild,
+      ),
+
+    fingerprintVersion:
+      gate.fingerprintVersion,
+
+    fingerprint:
+      gate.fingerprint,
+
+    blueprint:
+      structuredClone(
+        gate.blueprint,
+      ),
+
+    snapshot:
+      structuredClone(
+        gate.snapshot,
+      ),
+
+    checks:
+      structuredClone(
+        gate.checks,
+      ),
+
+    summary:
+      structuredClone(
+        gate.summary,
+      ),
+
+    executionAllowed:
+      false,
+  };
 }
 
 export function createMigrationGate(
@@ -630,8 +727,9 @@ export function createMigrationGate(
       'block',
     );
 
-  return {
-    schemaVersion: 3,
+  const gateEnvelope:
+    MigrationGateEnvelopeFingerprintInput = {
+    schemaVersion: 4,
 
     generatedAt:
       now.toISOString(),
@@ -701,5 +799,17 @@ export function createMigrationGate(
     },
 
     executionAllowed: false,
+  };
+
+  return {
+    ...gateEnvelope,
+
+    envelopeFingerprintVersion:
+      1,
+
+    envelopeFingerprint:
+      createMigrationGateEnvelopeFingerprint(
+        gateEnvelope,
+      ),
   };
 }

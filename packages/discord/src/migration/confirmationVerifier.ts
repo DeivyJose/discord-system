@@ -7,6 +7,11 @@ import type {
   MigrationGate,
 } from './migrationGateTypes.js';
 
+import {
+  createMigrationGateEnvelopeFingerprint,
+  extractMigrationGateEnvelopeFingerprintInput,
+} from './migrationGate.js';
+
 import type {
   ConfirmationManifest,
 } from './confirmationManifestTypes.js';
@@ -67,6 +72,63 @@ export function verifyConfirmationManifest(
   const checks:
     ConfirmationVerificationCheck[] = [];
 
+  const supportedVersions =
+    manifest.schemaVersion ===
+      2 &&
+    gate.schemaVersion ===
+      4 &&
+    gate.fingerprintVersion ===
+      3 &&
+    gate.envelopeFingerprintVersion ===
+      1;
+
+  checks.push({
+    id:
+      'version_contract',
+
+    status:
+      supportedVersions
+        ? 'pass'
+        : 'block',
+
+    details:
+      supportedVersions
+        ? 'Gate v4, Content Fingerprint v3, Envelope v1 y Manifest v2 confirmados.'
+        : 'La cadena usa versiones incompatibles o históricas.',
+  });
+
+  const recalculatedGateEnvelopeFingerprint =
+    createMigrationGateEnvelopeFingerprint(
+      extractMigrationGateEnvelopeFingerprintInput(
+        gate,
+      ),
+    );
+
+  const gateEnvelopeIntegrity =
+    gate.envelopeFingerprintVersion ===
+      1 &&
+    recalculatedGateEnvelopeFingerprint ===
+      gate.envelopeFingerprint;
+
+  checks.push({
+    id:
+      'gate_envelope_integrity',
+
+    status:
+      gateEnvelopeIntegrity
+        ? 'pass'
+        : 'block',
+
+    details:
+      gateEnvelopeIntegrity
+        ? 'El envelope actual del Gate reproduce su seal.'
+        : [
+            'El envelope actual del Gate fue alterado.',
+            `Declarado=${gate.envelopeFingerprint}.`,
+            `Recalculado=${recalculatedGateEnvelopeFingerprint}.`,
+          ].join(' '),
+  });
+
   const sameGuild =
     manifest.guild.id ===
       gate.guild.id;
@@ -103,6 +165,25 @@ export function verifyConfirmationManifest(
         : 'El fingerprint del Manifest no coincide con el Gate actual.',
   });
 
+  const envelopeFingerprintMatches =
+    manifest.gateEnvelopeFingerprint ===
+      gate.envelopeFingerprint;
+
+  checks.push({
+    id:
+      'gate_envelope_fingerprint',
+
+    status:
+      envelopeFingerprintMatches
+        ? 'pass'
+        : 'block',
+
+    details:
+      envelopeFingerprintMatches
+        ? 'El Manifest pertenece exactamente al envelope actual del Gate.'
+        : 'El envelope fingerprint del Manifest no coincide con el Gate actual.',
+  });
+
   const expectedShortFingerprint =
     gate.fingerprint.slice(
       0,
@@ -125,6 +206,31 @@ export function verifyConfirmationManifest(
       shortFingerprintMatches
         ? `Fingerprint corto confirmado: ${expectedShortFingerprint}.`
         : 'El fingerprint corto del Manifest no coincide con el Gate.',
+  });
+
+  const expectedShortEnvelopeFingerprint =
+    gate.envelopeFingerprint.slice(
+      0,
+      12,
+    );
+
+  const shortEnvelopeFingerprintMatches =
+    manifest.shortEnvelopeFingerprint ===
+      expectedShortEnvelopeFingerprint;
+
+  checks.push({
+    id:
+      'short_envelope_fingerprint',
+
+    status:
+      shortEnvelopeFingerprintMatches
+        ? 'pass'
+        : 'block',
+
+    details:
+      shortEnvelopeFingerprintMatches
+        ? `Envelope corto confirmado: ${expectedShortEnvelopeFingerprint}.`
+        : 'El envelope fingerprint corto del Manifest no coincide con el Gate.',
   });
 
   const manifestPending =
@@ -240,6 +346,7 @@ export function verifyConfirmationManifest(
       ? [
           'CONFIRM THE CLOCK',
           expectedShortFingerprint,
+          expectedShortEnvelopeFingerprint,
           manifest.confirmationId,
         ].join(' ')
       : '';
@@ -432,7 +539,7 @@ export function verifyConfirmationManifest(
     block === 0;
 
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
 
     receiptId:
       randomBytes(12)
@@ -453,6 +560,9 @@ export function verifyConfirmationManifest(
 
     gateFingerprint:
       gate.fingerprint,
+
+    gateEnvelopeFingerprint:
+      gate.envelopeFingerprint,
 
     approvalBoundary: {
       method:

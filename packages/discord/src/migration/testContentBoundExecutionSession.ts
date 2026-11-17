@@ -598,7 +598,7 @@ console.log(
 console.log('');
 
 console.log(
-  `Baseline reproduce Gate v3: ${baselinePasses ? 'SÍ' : 'NO'}`,
+  `Baseline reproduce Gate schema v4 / Content v3: ${baselinePasses ? 'SÍ' : 'NO'}`,
 );
 
 console.log(

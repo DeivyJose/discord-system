@@ -32,7 +32,7 @@ export interface ConfirmationApprovalEvidence {
 }
 
 export interface ApprovalReceipt {
-  schemaVersion: 2;
+  schemaVersion: 3;
 
   receiptId: string;
 
@@ -46,6 +46,8 @@ export interface ApprovalReceipt {
   };
 
   gateFingerprint: string;
+
+  gateEnvelopeFingerprint: string;
 
   approvalBoundary:
     ConfirmationApprovalEvidence;

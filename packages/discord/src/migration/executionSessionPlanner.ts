@@ -16,6 +16,8 @@ import type {
 
 import {
   createMigrationGateContentFingerprint,
+  createMigrationGateEnvelopeFingerprint,
+  extractMigrationGateEnvelopeFingerprintInput,
 } from './migrationGate.js';
 
 import type {
@@ -241,7 +243,7 @@ export function createExecutionSessionPlan(
 
   const gateContentMatches =
     gate.schemaVersion ===
-      3 &&
+      4 &&
     gate.fingerprintVersion ===
       3 &&
     gateBlueprintMatches &&
@@ -259,11 +261,43 @@ export function createExecutionSessionPlan(
 
     details:
       gateContentMatches
-        ? 'Los siete inputs actuales reproducen exactamente el fingerprint del Migration Gate v3.'
+        ? 'Los siete inputs actuales reproducen exactamente el Content Fingerprint v3 del Migration Gate schema v4.'
         : [
             'Los artefactos actuales NO reproducen el Migration Gate autorizado.',
             `Esperado=${gate.fingerprint}.`,
             `Recalculado=${recalculatedGateFingerprint}.`,
+          ].join(' '),
+  });
+
+  const recalculatedGateEnvelopeFingerprint =
+    createMigrationGateEnvelopeFingerprint(
+      extractMigrationGateEnvelopeFingerprintInput(
+        gate,
+      ),
+    );
+
+  const gateEnvelopeMatches =
+    gate.envelopeFingerprintVersion ===
+      1 &&
+    recalculatedGateEnvelopeFingerprint ===
+      gate.envelopeFingerprint;
+
+  checks.push({
+    id:
+      'gate_envelope_binding',
+
+    status:
+      gateEnvelopeMatches
+        ? 'pass'
+        : 'block',
+
+    details:
+      gateEnvelopeMatches
+        ? 'El envelope actual reproduce exactamente el seal del Migration Gate.'
+        : [
+            'El envelope del Migration Gate NO es íntegro.',
+            `Esperado=${gate.envelopeFingerprint}.`,
+            `Recalculado=${recalculatedGateEnvelopeFingerprint}.`,
           ].join(' '),
   });
 
@@ -288,6 +322,25 @@ export function createExecutionSessionPlan(
         : 'El Approval Receipt no contiene una aprobación válida.',
   });
 
+  const receiptEnvelopeMatchesGate =
+    receipt.gateEnvelopeFingerprint ===
+      gate.envelopeFingerprint;
+
+  checks.push({
+    id:
+      'approval_receipt_envelope',
+
+    status:
+      receiptEnvelopeMatchesGate
+        ? 'pass'
+        : 'block',
+
+    details:
+      receiptEnvelopeMatchesGate
+        ? 'El Approval Receipt autoriza este envelope exacto del Gate.'
+        : 'El Approval Receipt pertenece a un envelope diferente.',
+  });
+
   const receiptConfirmationId =
     receipt.manifest
       .confirmationId;
@@ -305,6 +358,9 @@ export function createExecutionSessionPlan(
     receiptClaim
       .gateFingerprint ===
         gate.fingerprint &&
+    receiptClaim
+      .gateEnvelopeFingerprint ===
+        gate.envelopeFingerprint &&
     receiptConfirmationId !==
       null &&
     receiptClaim
@@ -923,7 +979,7 @@ export function createExecutionSessionPlan(
     blockChecks === 0;
 
   return {
-    schemaVersion: 4,
+    schemaVersion: 5,
 
     sessionId,
 
@@ -943,6 +999,9 @@ export function createExecutionSessionPlan(
     gateFingerprint:
       gate.fingerprint,
 
+    gateEnvelopeFingerprint:
+      gate.envelopeFingerprint,
+
     contentBinding: {
       fingerprintVersion:
         3,
@@ -954,6 +1013,22 @@ export function createExecutionSessionPlan(
 
       matchesGate:
         gateContentMatches,
+
+      executionAllowed:
+        false,
+    },
+
+    envelopeBinding: {
+      fingerprintVersion:
+        1,
+
+      expectedGateEnvelopeFingerprint:
+        gate.envelopeFingerprint,
+
+      recalculatedGateEnvelopeFingerprint,
+
+      matchesGate:
+        gateEnvelopeMatches,
 
       executionAllowed:
         false,
