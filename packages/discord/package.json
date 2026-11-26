@@ -43,7 +43,8 @@
     "test:migration-gate-envelope-integrity": "tsx src/migration/testMigrationGateEnvelopeIntegrity.ts",
     "test:live-drift-inspector-compatibility": "tsx src/migration/testLiveDriftInspectorCompatibility.ts",
     "test:canary-guard": "tsx src/migration/testCanaryGuard.ts",
-    "test:canary-transport": "tsx src/migration/testSingleUseCanaryTransport.ts"
+    "test:canary-transport": "tsx src/migration/testSingleUseCanaryTransport.ts",
+    "test:discordjs-canary-gateway": "tsx src/migration/testDiscordJsCanaryRoleGateway.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

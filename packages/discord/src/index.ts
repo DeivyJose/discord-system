@@ -499,3 +499,12 @@ export {
   SingleUseCanaryTransport,
   SingleUseCanaryTransportError,
 } from './migration/singleUseCanaryTransport.js';
+
+export {
+  DiscordJsCanaryRoleGateway,
+  DiscordJsCanaryRoleGatewayError,
+} from './migration/discordJsCanaryRoleGateway.js';
+
+export type {
+  DiscordJsCanaryRoleGatewayErrorCode,
+} from './migration/discordJsCanaryRoleGateway.js';
