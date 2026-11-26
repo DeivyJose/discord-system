@@ -524,3 +524,17 @@ export type {
 export {
   runActionTimeCanary,
 } from './migration/actionTimeCanaryOrchestrator.js';
+
+export type {
+  MigrationProvenanceArtifact,
+  MigrationProvenanceCheck,
+  MigrationProvenanceCheckStatus,
+  MigrationProvenanceInput,
+  MigrationProvenanceVerification,
+} from './migration/migrationProvenanceTypes.js';
+
+export {
+  createMigrationProvenance,
+  createMigrationProvenanceArtifactFingerprint,
+  verifyMigrationProvenance,
+} from './migration/migrationProvenance.js';
