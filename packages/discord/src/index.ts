@@ -464,3 +464,25 @@ export {
   createDiscordBlueprintContentFingerprint,
   renderDiscordBlueprintArtifact,
 } from './blueprint/artifact.js';
+
+export type {
+  CanaryGuardCheck,
+  CanaryGuardCheckStatus,
+  CanaryGuardOptions,
+  CanaryGuardResult,
+  CanaryGuardStatus,
+  CanaryRoleIntent,
+} from './migration/canaryGuardTypes.js';
+
+export {
+  evaluateSingleOperationCanary,
+} from './migration/canaryGuard.js';
+
+export {
+  SimulatedCanaryAdapter,
+  SimulatedCanaryAdapterError,
+} from './migration/simulatedCanaryAdapter.js';
+
+export type {
+  SimulatedCanaryAdapterErrorCode,
+} from './migration/simulatedCanaryAdapter.js';

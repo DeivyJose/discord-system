@@ -39,7 +39,7 @@ import type {
   MigrationGateCheck,
 } from './migrationGateTypes.js';
 
-const MAXIMUM_SNAPSHOT_AGE_MINUTES =
+export const MAXIMUM_SNAPSHOT_AGE_MINUTES =
   30;
 
 export interface MigrationGateFingerprintInput {

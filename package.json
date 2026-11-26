@@ -49,7 +49,8 @@
     "artifact:discord-blueprint": "npm run artifact:blueprint --workspace=@the-clock/discord",
     "test:discord-blueprint-fingerprint": "npm run test:blueprint-fingerprint --workspace=@the-clock/discord",
     "test:discord-migration-gate-envelope-integrity": "npm run test:migration-gate-envelope-integrity --workspace=@the-clock/discord",
-    "test:discord-live-drift-inspector-compatibility": "npm run test:live-drift-inspector-compatibility --workspace=@the-clock/discord"
+    "test:discord-live-drift-inspector-compatibility": "npm run test:live-drift-inspector-compatibility --workspace=@the-clock/discord",
+    "test:discord-canary-guard": "npm run test:canary-guard --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",
