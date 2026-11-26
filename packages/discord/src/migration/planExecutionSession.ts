@@ -15,8 +15,16 @@ import {
 } from '../blueprint/artifact.js';
 
 import type {
+  MigrationPlan,
+} from './types.js';
+
+import type {
   MigrationOperationsPlan,
 } from './operationTypes.js';
+
+import type {
+  MigrationProvenanceArtifact,
+} from './migrationProvenanceTypes.js';
 
 import type {
   DiscordExecutionPreview,
@@ -95,6 +103,22 @@ const bindings =
     snapshot.guild.id,
   );
 
+const plan =
+  await readJson<MigrationPlan>(
+    '.data',
+    'migration-plans',
+    'latest.json',
+  );
+
+const provenance =
+  await readJson<
+    MigrationProvenanceArtifact
+  >(
+    '.data',
+    'migration-provenance',
+    'latest.json',
+  );
+
 const operations =
   await readJson<MigrationOperationsPlan>(
     '.data',
@@ -148,6 +172,8 @@ const creation =
       blueprint,
       snapshot,
       bindings,
+      plan,
+      provenance,
       preflight,
       hierarchy,
     },

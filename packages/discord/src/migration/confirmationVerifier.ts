@@ -74,11 +74,11 @@ export function verifyConfirmationManifest(
 
   const supportedVersions =
     manifest.schemaVersion ===
-      2 &&
-    gate.schemaVersion ===
-      4 &&
-    gate.fingerprintVersion ===
       3 &&
+    gate.schemaVersion ===
+      5 &&
+    gate.fingerprintVersion ===
+      4 &&
     gate.envelopeFingerprintVersion ===
       1;
 
@@ -93,7 +93,7 @@ export function verifyConfirmationManifest(
 
     details:
       supportedVersions
-        ? 'Gate v4, Content Fingerprint v3, Envelope v1 y Manifest v2 confirmados.'
+        ? 'Gate v5, Content Fingerprint v4, Envelope v1 y Manifest v3 confirmados.'
         : 'La cadena usa versiones incompatibles o históricas.',
   });
 
@@ -182,6 +182,45 @@ export function verifyConfirmationManifest(
       envelopeFingerprintMatches
         ? 'El Manifest pertenece exactamente al envelope actual del Gate.'
         : 'El envelope fingerprint del Manifest no coincide con el Gate actual.',
+  });
+
+  const gateProvenance =
+    (
+      gate as unknown as {
+        provenance?:
+          typeof gate.provenance;
+      }
+    ).provenance;
+
+  const provenanceFingerprintMatches =
+    gateProvenance !==
+      undefined &&
+    manifest.provenanceFingerprint ===
+      gateProvenance.lineageFingerprint &&
+    gateProvenance.schemaVersion ===
+      1 &&
+    gateProvenance.fingerprintVersion ===
+      1 &&
+    gateProvenance.summary.valid ===
+      true &&
+    gateProvenance.summary.block ===
+      0 &&
+    gateProvenance.executionAllowed ===
+      false;
+
+  checks.push({
+    id:
+      'provenance_fingerprint',
+
+    status:
+      provenanceFingerprintMatches
+        ? 'pass'
+        : 'block',
+
+    details:
+      provenanceFingerprintMatches
+        ? 'El Manifest autoriza exactamente el Migration Provenance del Gate.'
+        : 'El Migration Provenance del Manifest no coincide con el Gate.',
   });
 
   const expectedShortFingerprint =
@@ -539,7 +578,7 @@ export function verifyConfirmationManifest(
     block === 0;
 
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
 
     receiptId:
       randomBytes(12)
@@ -563,6 +602,12 @@ export function verifyConfirmationManifest(
 
     gateEnvelopeFingerprint:
       gate.envelopeFingerprint,
+
+
+    provenanceFingerprint:
+      gateProvenance
+        ?.lineageFingerprint ??
+      '',
 
     approvalBoundary: {
       method:

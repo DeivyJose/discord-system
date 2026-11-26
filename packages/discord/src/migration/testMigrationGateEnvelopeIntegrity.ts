@@ -18,6 +18,10 @@ import type {
 } from './operationTypes.js';
 
 import type {
+  MigrationProvenanceArtifact,
+} from './migrationProvenanceTypes.js';
+
+import type {
   DiscordExecutionPreview,
 } from './executionTypes.js';
 
@@ -31,6 +35,7 @@ import type {
 
 import type {
   DiscordBindings,
+  MigrationPlan,
 } from './types.js';
 
 import {
@@ -86,6 +91,24 @@ const bindings =
   >(
     '.data',
     'discord-bindings.json',
+  );
+
+const plan =
+  await readJson<
+    MigrationPlan
+  >(
+    '.data',
+    'migration-plans',
+    'latest.json',
+  );
+
+const provenance =
+  await readJson<
+    MigrationProvenanceArtifact
+  >(
+    '.data',
+    'migration-provenance',
+    'latest.json',
   );
 
 const operations =
@@ -145,6 +168,8 @@ const gate =
       blueprint,
       snapshot,
       bindings,
+      plan,
+      provenance,
       operations,
       executionPreview:
         preview,
@@ -163,7 +188,7 @@ const recalculatedEnvelope =
 
 const baselineEnvelopeValid =
   gate.schemaVersion ===
-    4 &&
+    5 &&
   gate.envelopeFingerprintVersion ===
     1 &&
   recalculatedEnvelope ===
@@ -230,6 +255,8 @@ const gateArtifacts = {
   blueprint,
   snapshot,
   bindings,
+  plan,
+  provenance,
   preflight,
   hierarchy,
 };
@@ -279,7 +306,7 @@ const baselinePasses =
   baseline.receiptClaimed &&
   baseline.session
     ?.schemaVersion ===
-    5 &&
+    6 &&
   baseline.session
     .envelopeBinding
     .matchesGate &&

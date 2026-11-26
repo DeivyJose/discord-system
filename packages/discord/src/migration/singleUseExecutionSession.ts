@@ -217,6 +217,11 @@ export async function createSingleUseExecutionSession(
         options.gate
           .envelopeFingerprint,
 
+      provenanceFingerprint:
+        options.gate
+          .provenance
+          .lineageFingerprint,
+
       confirmationId,
 
       claimedAt:

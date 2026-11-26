@@ -77,16 +77,34 @@ export type ExecutionSessionGateArtifacts =
     | 'blueprint'
     | 'snapshot'
     | 'bindings'
+    | 'plan'
+    | 'provenance'
     | 'preflight'
     | 'hierarchy'
   >;
 
 export interface ExecutionSessionContentBinding {
-  fingerprintVersion: 3;
+  fingerprintVersion: 4;
 
   expectedGateFingerprint: string;
 
   recalculatedGateFingerprint: string;
+
+  matchesGate: boolean;
+
+  executionAllowed: false;
+}
+
+export interface ExecutionSessionProvenanceBinding {
+  fingerprintVersion: 1;
+
+  expectedProvenanceFingerprint: string;
+
+  recalculatedProvenanceFingerprint: string;
+
+  gateProvenanceFingerprint: string;
+
+  receiptProvenanceFingerprint: string;
 
   matchesGate: boolean;
 
@@ -116,6 +134,8 @@ export interface ExecutionSessionReceiptClaim {
 
   gateEnvelopeFingerprint: string;
 
+  provenanceFingerprint: string;
+
   confirmationId: string;
 
   claimedAt: string;
@@ -124,7 +144,7 @@ export interface ExecutionSessionReceiptClaim {
 }
 
 export interface ExecutionSessionPlan {
-  schemaVersion: 5;
+  schemaVersion: 6;
 
   sessionId: string;
 
@@ -142,11 +162,16 @@ export interface ExecutionSessionPlan {
 
   gateEnvelopeFingerprint: string;
 
+  provenanceFingerprint: string;
+
   contentBinding:
     ExecutionSessionContentBinding;
 
   envelopeBinding:
     ExecutionSessionEnvelopeBinding;
+
+  provenanceBinding:
+    ExecutionSessionProvenanceBinding;
 
   approvalReceiptId: string;
 
@@ -158,6 +183,8 @@ export interface ExecutionSessionPlan {
     operationsGeneratedAt: string;
 
     previewGeneratedAt: string;
+
+    provenanceGeneratedAt: string;
 
     gateGeneratedAt: string;
 

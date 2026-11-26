@@ -20,6 +20,8 @@ export interface ExecutionSessionReceiptClaimOptions {
 
   gateEnvelopeFingerprint: string;
 
+  provenanceFingerprint: string;
+
   confirmationId: string;
 
   claimedAt: string;
@@ -88,6 +90,12 @@ export async function claimReceiptForExecutionSession(
   );
 
   assertHex(
+    options.provenanceFingerprint,
+    64,
+    'provenanceFingerprint',
+  );
+
+  assertHex(
     options.confirmationId,
     16,
     'confirmationId',
@@ -123,6 +131,9 @@ export async function claimReceiptForExecutionSession(
     gateEnvelopeFingerprint:
       options.gateEnvelopeFingerprint,
 
+    provenanceFingerprint:
+      options.provenanceFingerprint,
+
     confirmationId:
       options.confirmationId,
 
@@ -151,7 +162,7 @@ export async function claimReceiptForExecutionSession(
     await handle.writeFile(
       JSON.stringify(
         {
-          schemaVersion: 2,
+          schemaVersion: 3,
 
           ...claim,
         },

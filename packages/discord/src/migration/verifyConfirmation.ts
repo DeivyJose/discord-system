@@ -196,6 +196,9 @@ if (
       gateEnvelopeFingerprint:
         gate.envelopeFingerprint,
 
+      provenanceFingerprint:
+        gate.provenance.lineageFingerprint,
+
       receiptId:
         receipt.receiptId,
 

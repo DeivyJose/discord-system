@@ -20,6 +20,10 @@ import {
   extractMigrationGateEnvelopeFingerprintInput,
 } from './migrationGate.js';
 
+import {
+  verifyMigrationProvenance,
+} from './migrationProvenance.js';
+
 import type {
   ApprovalReceipt,
 } from './approvalReceiptTypes.js';
@@ -213,6 +217,12 @@ export function createExecutionSessionPlan(
       bindings:
         gateArtifacts.bindings,
 
+      plan:
+        gateArtifacts.plan,
+
+      provenance:
+        gateArtifacts.provenance,
+
       operations,
 
       executionPreview:
@@ -224,6 +234,90 @@ export function createExecutionSessionPlan(
       hierarchy:
         gateArtifacts.hierarchy,
     });
+
+  const provenanceVerification =
+    verifyMigrationProvenance(
+      gateArtifacts.provenance,
+      {
+        blueprint:
+          gateArtifacts.blueprint,
+
+        snapshot:
+          gateArtifacts.snapshot,
+
+        bindings:
+          gateArtifacts.bindings,
+
+        plan:
+          gateArtifacts.plan,
+
+        operations,
+
+        preview,
+      },
+      now,
+    );
+
+  const recalculatedProvenanceFingerprint =
+    provenanceVerification.expected
+      .lineageFingerprint;
+
+  const gateProvenance =
+    (
+      gate as unknown as {
+        provenance?:
+          typeof gate.provenance;
+      }
+    ).provenance;
+
+  const provenanceMatchesGate =
+    gateProvenance !==
+      undefined &&
+    provenanceVerification.status ===
+      'valid' &&
+    provenanceVerification.summary.valid ===
+      true &&
+    provenanceVerification.summary.block ===
+      0 &&
+    gateArtifacts.provenance
+      .lineageFingerprint ===
+      recalculatedProvenanceFingerprint &&
+    gateProvenance.schemaVersion ===
+      1 &&
+    gateProvenance.fingerprintVersion ===
+      1 &&
+    gateProvenance.lineageFingerprint ===
+      recalculatedProvenanceFingerprint &&
+    gateProvenance.guildId ===
+      gate.guild.id &&
+    gateProvenance.summary.valid ===
+      true &&
+    gateProvenance.summary.block ===
+      0 &&
+    gateProvenance.executionAllowed ===
+      false &&
+    receipt.provenanceFingerprint ===
+      recalculatedProvenanceFingerprint;
+
+  checks.push({
+    id:
+      'provenance_binding',
+
+    status:
+      provenanceMatchesGate
+        ? 'pass'
+        : 'block',
+
+    details:
+      provenanceMatchesGate
+        ? `Provenance reproducido exactamente: ${recalculatedProvenanceFingerprint}.`
+        : [
+            'El Provenance actual NO reproduce el lineage autorizado.',
+            `Gate=${gateProvenance?.lineageFingerprint ?? 'MISSING'}.`,
+            `Receipt=${receipt.provenanceFingerprint}.`,
+            `Recalculado=${recalculatedProvenanceFingerprint}.`,
+          ].join(' '),
+  });
 
   const gateBlueprintMatches =
     gate.blueprint.schemaVersion ===
@@ -243,9 +337,9 @@ export function createExecutionSessionPlan(
 
   const gateContentMatches =
     gate.schemaVersion ===
-      4 &&
+      5 &&
     gate.fingerprintVersion ===
-      3 &&
+      4 &&
     gateBlueprintMatches &&
     recalculatedGateFingerprint ===
       gate.fingerprint;
@@ -261,7 +355,7 @@ export function createExecutionSessionPlan(
 
     details:
       gateContentMatches
-        ? 'Los siete inputs actuales reproducen exactamente el Content Fingerprint v3 del Migration Gate schema v4.'
+        ? 'Los nueve inputs actuales reproducen exactamente el Content Fingerprint v4 del Migration Gate schema v5.'
         : [
             'Los artefactos actuales NO reproducen el Migration Gate autorizado.',
             `Esperado=${gate.fingerprint}.`,
@@ -302,6 +396,8 @@ export function createExecutionSessionPlan(
   });
 
   const receiptApproved =
+    receipt.schemaVersion ===
+      4 &&
     receipt.status ===
       'approved' &&
     receipt.summary
@@ -361,6 +457,12 @@ export function createExecutionSessionPlan(
     receiptClaim
       .gateEnvelopeFingerprint ===
         gate.envelopeFingerprint &&
+    receiptClaim
+      .provenanceFingerprint ===
+        gateProvenance?.lineageFingerprint &&
+    receiptClaim
+      .provenanceFingerprint ===
+        receipt.provenanceFingerprint &&
     receiptConfirmationId !==
       null &&
     receiptClaim
@@ -979,7 +1081,7 @@ export function createExecutionSessionPlan(
     blockChecks === 0;
 
   return {
-    schemaVersion: 5,
+    schemaVersion: 6,
 
     sessionId,
 
@@ -1002,9 +1104,14 @@ export function createExecutionSessionPlan(
     gateEnvelopeFingerprint:
       gate.envelopeFingerprint,
 
+    provenanceFingerprint:
+      gateProvenance
+        ?.lineageFingerprint ??
+      '',
+
     contentBinding: {
       fingerprintVersion:
-        3,
+        4,
 
       expectedGateFingerprint:
         gate.fingerprint,
@@ -1034,6 +1141,31 @@ export function createExecutionSessionPlan(
         false,
     },
 
+    provenanceBinding: {
+      fingerprintVersion:
+        1,
+
+      expectedProvenanceFingerprint:
+        gateArtifacts.provenance
+          .lineageFingerprint,
+
+      recalculatedProvenanceFingerprint,
+
+      gateProvenanceFingerprint:
+        gateProvenance
+          ?.lineageFingerprint ??
+        '',
+
+      receiptProvenanceFingerprint:
+        receipt.provenanceFingerprint,
+
+      matchesGate:
+        provenanceMatchesGate,
+
+      executionAllowed:
+        false,
+    },
+
     approvalReceiptId:
       receipt.receiptId,
 
@@ -1050,6 +1182,9 @@ export function createExecutionSessionPlan(
 
       previewGeneratedAt:
         preview.generatedAt,
+
+      provenanceGeneratedAt:
+        gateArtifacts.provenance.generatedAt,
 
       gateGeneratedAt:
         gate.generatedAt,

@@ -86,9 +86,9 @@ export function evaluateSingleOperationCanary(
   addCheck(
     checks,
     'session_schema',
-    session.schemaVersion === 5,
-    'Execution Session schema v5 confirmado.',
-    'El Canary requiere Execution Session schema v5.',
+    session.schemaVersion === 6,
+    'Execution Session schema v6 confirmado.',
+    'El Canary requiere Execution Session schema v6.',
   );
 
   addCheck(
@@ -140,7 +140,7 @@ export function evaluateSingleOperationCanary(
 
   const contentBindingValid =
     session.contentBinding
-      .fingerprintVersion === 3 &&
+      .fingerprintVersion === 4 &&
     session.contentBinding
       .matchesGate === true &&
     session.contentBinding
@@ -162,7 +162,59 @@ export function evaluateSingleOperationCanary(
 
   /*
    * ======================================================
-   * 3. ENVELOPE BINDING
+   * 3. PROVENANCE BINDING
+   * ======================================================
+   */
+
+  const provenanceBinding =
+    (
+      session as unknown as {
+        provenanceBinding?:
+          typeof session.provenanceBinding;
+      }
+    ).provenanceBinding;
+
+  const provenanceFingerprintValid =
+    typeof session.provenanceFingerprint ===
+      'string' &&
+    /^[a-f0-9]{64}$/i.test(
+      session.provenanceFingerprint,
+    );
+
+  const provenanceBindingValid =
+    provenanceFingerprintValid &&
+    provenanceBinding !==
+      undefined &&
+    provenanceBinding
+      .fingerprintVersion === 1 &&
+    provenanceBinding
+      .matchesGate === true &&
+    provenanceBinding
+      .executionAllowed === false &&
+    provenanceBinding
+      .expectedProvenanceFingerprint ===
+        session.provenanceFingerprint &&
+    provenanceBinding
+      .recalculatedProvenanceFingerprint ===
+        session.provenanceFingerprint &&
+    provenanceBinding
+      .gateProvenanceFingerprint ===
+        session.provenanceFingerprint &&
+    provenanceBinding
+      .receiptProvenanceFingerprint ===
+        session.provenanceFingerprint;
+
+  addCheck(
+    checks,
+    'provenance_binding',
+    provenanceBindingValid,
+    'Migration Provenance coincide exactamente con la Session.',
+    'Migration Provenance no coincide exactamente con la Session.',
+  );
+
+  /*
+   * ======================================================
+   * 4. ENVELOPE BINDING
    * ======================================================
    */
 
@@ -190,7 +242,7 @@ export function evaluateSingleOperationCanary(
 
   /*
    * ======================================================
-   * 4. RECEIPT CLAIM
+   * 5. RECEIPT CLAIM
    * ======================================================
    */
 
@@ -208,6 +260,8 @@ export function evaluateSingleOperationCanary(
       session.gateFingerprint &&
     claim.gateEnvelopeFingerprint ===
       session.gateEnvelopeFingerprint &&
+    claim.provenanceFingerprint ===
+      session.provenanceFingerprint &&
     claim.executionAllowed ===
       false;
 

@@ -15,8 +15,16 @@ import {
 } from '../blueprint/artifact.js';
 
 import type {
+  MigrationPlan,
+} from './types.js';
+
+import type {
   MigrationOperationsPlan,
 } from './operationTypes.js';
+
+import type {
+  MigrationProvenanceArtifact,
+} from './migrationProvenanceTypes.js';
 
 import type {
   DiscordExecutionPreview,
@@ -90,6 +98,22 @@ const bindings =
     snapshot.guild.id,
   );
 
+const plan =
+  await readJson<MigrationPlan>(
+    '.data',
+    'migration-plans',
+    'latest.json',
+  );
+
+const provenance =
+  await readJson<
+    MigrationProvenanceArtifact
+  >(
+    '.data',
+    'migration-provenance',
+    'latest.json',
+  );
+
 const operations =
   await readJson<MigrationOperationsPlan>(
     '.data',
@@ -123,6 +147,8 @@ const gate =
     blueprint,
     snapshot,
     bindings,
+    plan,
+    provenance,
     operations,
     executionPreview,
     preflight,
@@ -213,7 +239,7 @@ console.log(
 console.log('');
 
 console.log(
-  `Content Fingerprint v3: ${gate.fingerprint}`,
+  `Content Fingerprint v4: ${gate.fingerprint}`,
 );
 
 console.log('');

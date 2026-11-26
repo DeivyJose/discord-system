@@ -14,8 +14,16 @@ import type {
 } from '../inspector/types.js';
 
 import type {
+  MigrationPlan,
+} from './types.js';
+
+import type {
   MigrationOperationsPlan,
 } from './operationTypes.js';
+
+import type {
+  MigrationProvenanceArtifact,
+} from './migrationProvenanceTypes.js';
 
 import type {
   DiscordExecutionPreview,
@@ -88,6 +96,24 @@ const bindings =
     snapshot.guild.id,
   );
 
+const plan =
+  await readJson<
+    MigrationPlan
+  >(
+    '.data',
+    'migration-plans',
+    'latest.json',
+  );
+
+const provenance =
+  await readJson<
+    MigrationProvenanceArtifact
+  >(
+    '.data',
+    'migration-provenance',
+    'latest.json',
+  );
+
 const operations =
   await readJson<
     MigrationOperationsPlan
@@ -135,6 +161,8 @@ const gateArtifacts = {
   blueprint,
   snapshot,
   bindings,
+  plan,
+  provenance,
   preflight,
   hierarchy,
 };
@@ -153,6 +181,8 @@ const gate =
       blueprint,
       snapshot,
       bindings,
+      plan,
+      provenance,
       operations,
       executionPreview:
         preview,
@@ -272,7 +302,7 @@ const firstCreated =
     'ready' &&
   first.session
     .schemaVersion ===
-    5 &&
+    6 &&
   first.session
     .receiptClaim
     ?.receiptId ===
@@ -289,7 +319,14 @@ const firstCreated =
   first.session
     .receiptClaim
     ?.gateEnvelopeFingerprint ===
-    gate.envelopeFingerprint;
+    gate.envelopeFingerprint &&
+  first.session
+    .receiptClaim
+    ?.provenanceFingerprint ===
+    gate.provenance.lineageFingerprint &&
+  first.session
+    .provenanceBinding
+    .matchesGate;
 
 const second =
   await createSingleUseExecutionSession({

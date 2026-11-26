@@ -14,6 +14,10 @@ import type {
 } from './executionSessionTypes.js';
 
 import type {
+  MigrationProvenanceArtifact,
+} from './migrationProvenanceTypes.js';
+
+import type {
   CanaryObservedRole,
   CanaryRoleCreatePayload,
   CanaryRoleGateway,
@@ -54,6 +58,79 @@ const session =
       'utf8',
     ),
   ) as ExecutionSessionPlan;
+
+/*
+ * Este test usa una Execution Session histórica
+ * persistida antes del contrato v6.
+ *
+ * La normalizamos EXCLUSIVAMENTE en memoria para
+ * probar el Action-Time Orchestrator actual.
+ *
+ * No modifica .data.
+ * No crea autorización.
+ * No conecta Discord.
+ */
+const provenance =
+  JSON.parse(
+    await readFile(
+      path.join(
+        projectRoot,
+        '.data',
+        'migration-provenance',
+        'latest.json',
+      ),
+      'utf8',
+    ),
+  ) as MigrationProvenanceArtifact;
+
+session.schemaVersion =
+  6;
+
+session.contentBinding
+  .fingerprintVersion =
+  4;
+
+session.provenanceFingerprint =
+  provenance.lineageFingerprint;
+
+session.provenanceBinding = {
+  fingerprintVersion:
+    1,
+
+  expectedProvenanceFingerprint:
+    provenance.lineageFingerprint,
+
+  recalculatedProvenanceFingerprint:
+    provenance.lineageFingerprint,
+
+  gateProvenanceFingerprint:
+    provenance.lineageFingerprint,
+
+  receiptProvenanceFingerprint:
+    provenance.lineageFingerprint,
+
+  matchesGate:
+    true,
+
+  executionAllowed:
+    false,
+};
+
+session.source
+  .provenanceGeneratedAt =
+    provenance.generatedAt;
+
+if (
+  !session.receiptClaim
+) {
+  throw new Error(
+    'Fixture histórico sin Receipt Claim.',
+  );
+}
+
+session.receiptClaim
+  .provenanceFingerprint =
+    provenance.lineageFingerprint;
 
 const historicalSnapshot =
   JSON.parse(

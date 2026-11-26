@@ -16,6 +16,7 @@ import {
 
 import type {
   DiscordBindings,
+  MigrationPlan,
 } from './types.js';
 
 import type {
@@ -35,6 +36,14 @@ import type {
 } from './hierarchyBootstrapTypes.js';
 
 import type {
+  MigrationProvenanceArtifact,
+} from './migrationProvenanceTypes.js';
+
+import {
+  verifyMigrationProvenance,
+} from './migrationProvenance.js';
+
+import type {
   MigrationGate,
   MigrationGateCheck,
 } from './migrationGateTypes.js';
@@ -49,6 +58,11 @@ export interface MigrationGateFingerprintInput {
   snapshot: DiscordGuildSnapshot;
 
   bindings: DiscordBindings;
+
+  plan: MigrationPlan;
+
+  provenance:
+    MigrationProvenanceArtifact;
 
   operations: MigrationOperationsPlan;
 
@@ -142,13 +156,15 @@ function canonicalJson(
 }
 
 /*
- * Migration Gate Content Fingerprint v3
+ * Migration Gate Content Fingerprint v4
  *
- * Sella siete entradas autorizadas:
+ * Sella nueve entradas autorizadas:
  *
  * - Blueprint Artifact;
  * - snapshot;
  * - bindings;
+ * - Migration Plan;
+ * - Migration Provenance;
  * - operations;
  * - executionPreview;
  * - preflight;
@@ -164,7 +180,7 @@ export function createMigrationGateContentFingerprint(
     MigrationGateFingerprintInput,
 ): string {
   const payload = {
-    fingerprintVersion: 3,
+    fingerprintVersion: 4,
 
     blueprint: {
       schemaVersion:
@@ -210,6 +226,12 @@ export function createMigrationGateContentFingerprint(
     bindings:
       input.bindings,
 
+    plan:
+      input.plan,
+
+    provenance:
+      input.provenance,
+
     operations:
       input.operations,
 
@@ -228,6 +250,10 @@ export function createMigrationGateContentFingerprint(
 
       blueprintExecutionAllowed:
         input.blueprint
+          .executionAllowed,
+
+      provenanceExecutionAllowed:
+        input.provenance
           .executionAllowed,
 
       previewDryRunOnly:
@@ -337,6 +363,11 @@ export function extractMigrationGateEnvelopeFingerprintInput(
         gate.snapshot,
       ),
 
+    provenance:
+      structuredClone(
+        gate.provenance,
+      ),
+
     checks:
       structuredClone(
         gate.checks,
@@ -433,9 +464,73 @@ export function createMigrationGate(
           ].join(' '),
   });
 
+  const provenanceVerification =
+    verifyMigrationProvenance(
+      input.provenance,
+      {
+        blueprint:
+          input.blueprint,
+
+        snapshot:
+          input.snapshot,
+
+        bindings:
+          input.bindings,
+
+        plan:
+          input.plan,
+
+        operations:
+          input.operations,
+
+        preview:
+          input.executionPreview,
+      },
+      now,
+    );
+
+  const provenanceValid =
+    provenanceVerification.status ===
+      'valid' &&
+    provenanceVerification.summary
+      .valid ===
+      true &&
+    provenanceVerification.summary
+      .block ===
+      0 &&
+    input.provenance
+      .executionAllowed ===
+      false;
+
+  checks.push({
+    id:
+      'migration_provenance',
+
+    label:
+      'El Migration Provenance es íntegro y reproducible.',
+
+    status:
+      provenanceValid
+        ? 'pass'
+        : 'block',
+
+    details:
+      provenanceValid
+        ? [
+            'Provenance v1 confirmado.',
+            `Lineage=${input.provenance.lineageFingerprint}.`,
+          ].join(' ')
+        : [
+            'El Migration Provenance NO reproduce los artefactos actuales.',
+            `Lineage declarado=${input.provenance.lineageFingerprint}.`,
+            `BLOCK=${provenanceVerification.summary.block}.`,
+          ].join(' '),
+  });
+
   const guildIds = [
     input.snapshot.guild.id,
     input.bindings.guildId,
+    input.provenance.guildId,
     input.operations.guild.id,
     input.executionPreview.guild.id,
     input.preflight.guild.id,
@@ -533,6 +628,11 @@ export function createMigrationGate(
       input.executionPreview.generatedAt,
     ).getTime();
 
+  const provenanceTime =
+    new Date(
+      input.provenance.generatedAt,
+    ).getTime();
+
   const preflightTime =
     new Date(
       input.preflight.checkedAt,
@@ -548,6 +648,7 @@ export function createMigrationGate(
       snapshotTime.getTime(),
       operationsTime,
       executionPreviewTime,
+      provenanceTime,
       preflightTime,
       hierarchyTime,
     ].every(
@@ -561,6 +662,8 @@ export function createMigrationGate(
       snapshotTime.getTime() &&
     executionPreviewTime >=
       operationsTime &&
+    provenanceTime >=
+      executionPreviewTime &&
     preflightTime >=
       operationsTime &&
     hierarchyTime >=
@@ -584,12 +687,13 @@ export function createMigrationGate(
             `snapshot=${input.snapshot.capturedAt},`,
             `operations=${input.operations.generatedAt},`,
             `preview=${input.executionPreview.generatedAt},`,
+            `provenance=${input.provenance.generatedAt},`,
             `preflight=${input.preflight.checkedAt},`,
             `hierarchy=${input.hierarchy.generatedAt}.`,
           ].join(' ')
         : [
             'Los artefactos no pertenecen a una cadena temporal coherente.',
-            'Regenera Operations, Preview, Preflight y Hierarchy después del snapshot actual.',
+            'Regenera Plan, Operations, Preview, Provenance, Preflight y Hierarchy después del snapshot actual.',
           ].join(' '),
   });
 
@@ -729,7 +833,7 @@ export function createMigrationGate(
 
   const gateEnvelope:
     MigrationGateEnvelopeFingerprintInput = {
-    schemaVersion: 4,
+    schemaVersion: 5,
 
     generatedAt:
       now.toISOString(),
@@ -740,7 +844,7 @@ export function createMigrationGate(
     },
 
     fingerprintVersion:
-      3,
+      4,
 
     fingerprint:
       createMigrationGateContentFingerprint(
@@ -783,6 +887,31 @@ export function createMigrationGate(
 
       maximumAgeMinutes:
         MAXIMUM_SNAPSHOT_AGE_MINUTES,
+    },
+
+    provenance: {
+      schemaVersion:
+        input.provenance.schemaVersion,
+
+      fingerprintVersion:
+        input.provenance.fingerprintVersion,
+
+      lineageFingerprint:
+        input.provenance.lineageFingerprint,
+
+      generatedAt:
+        input.provenance.generatedAt,
+
+      guildId:
+        input.provenance.guildId,
+
+      summary:
+        structuredClone(
+          input.provenance.summary,
+        ),
+
+      executionAllowed:
+        false,
     },
 
     checks,

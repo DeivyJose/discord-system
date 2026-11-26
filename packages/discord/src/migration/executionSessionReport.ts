@@ -20,6 +20,7 @@ export function renderExecutionSessionPlan(
     '----------------------',
     `Gate content fingerprint: ${session.gateFingerprint}`,
     `Gate envelope fingerprint: ${session.gateEnvelopeFingerprint}`,
+    `Migration Provenance: ${session.provenanceFingerprint}`,
     `Content-bound al Gate: ${
       session.contentBinding.matchesGate
         ? 'SÍ'
@@ -34,6 +35,13 @@ export function renderExecutionSessionPlan(
     }`,
     `Envelope recalculado: ${session.envelopeBinding.recalculatedGateEnvelopeFingerprint}`,
     `Envelope version: ${session.envelopeBinding.fingerprintVersion}`,
+    `Provenance-bound al Gate: ${
+      session.provenanceBinding.matchesGate
+        ? 'SÍ'
+        : 'NO'
+    }`,
+    `Provenance recalculado: ${session.provenanceBinding.recalculatedProvenanceFingerprint}`,
+    `Provenance version: ${session.provenanceBinding.fingerprintVersion}`,
     `Approval Receipt: ${session.approvalReceiptId}`,
     `Receipt claim: ${
       session.receiptClaim

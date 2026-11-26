@@ -45,6 +45,8 @@ export function createConfirmationManifest(
 
   const gateEnvelopeValid =
     gate.schemaVersion ===
+      5 &&
+    gate.fingerprintVersion ===
       4 &&
     gate.envelopeFingerprintVersion ===
       1 &&
@@ -71,6 +73,48 @@ export function createConfirmationManifest(
             `Esperado=${gate.envelopeFingerprint}.`,
             `Recalculado=${recalculatedGateEnvelopeFingerprint}.`,
           ].join(' '),
+  });
+
+  const gateProvenance =
+    (
+      gate as unknown as {
+        provenance?:
+          typeof gate.provenance;
+      }
+    ).provenance;
+
+  const gateProvenanceValid =
+    gateProvenance !==
+      undefined &&
+    gateProvenance.schemaVersion ===
+      1 &&
+    gateProvenance.fingerprintVersion ===
+      1 &&
+    gateProvenance.guildId ===
+      gate.guild.id &&
+    gateProvenance.summary.valid ===
+      true &&
+    gateProvenance.summary.block ===
+      0 &&
+    gateProvenance.executionAllowed ===
+      false &&
+    /^[a-f0-9]{64}$/i.test(
+      gateProvenance.lineageFingerprint,
+    );
+
+  checks.push({
+    id:
+      'gate_provenance',
+
+    status:
+      gateProvenanceValid
+        ? 'pass'
+        : 'block',
+
+    details:
+      gateProvenanceValid
+        ? `Migration Provenance confirmado: ${gate.provenance.lineageFingerprint}.`
+        : 'El Migration Provenance del Gate no es válido.',
   });
 
   const gateReady =
@@ -195,7 +239,7 @@ export function createConfirmationManifest(
       : null;
 
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
 
     createdAt:
       now.toISOString(),
@@ -220,6 +264,12 @@ export function createConfirmationManifest(
 
     gateEnvelopeFingerprint:
       gate.envelopeFingerprint,
+
+
+    provenanceFingerprint:
+      gateProvenance
+        ?.lineageFingerprint ??
+      '',
 
     shortFingerprint,
 

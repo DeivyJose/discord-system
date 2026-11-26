@@ -8,6 +8,10 @@ import type {
   ExecutionSessionPlan,
 } from './executionSessionTypes.js';
 
+import type {
+  MigrationProvenanceArtifact,
+} from './migrationProvenanceTypes.js';
+
 import {
   createLiveDriftBaseline,
   normalizeDiscordStructureSnapshot,
@@ -44,6 +48,79 @@ const session =
       'utf8',
     ),
   ) as ExecutionSessionPlan;
+
+/*
+ * Fixture histórico:
+ *
+ * execution-sessions/latest.json pertenece al contrato
+ * anterior. Para esta prueba UNITARIA del Canary Guard
+ * lo normalizamos solo en memoria a Session v6.
+ *
+ * No se escribe .data.
+ * No se crea autorización.
+ * No se conecta Discord.
+ */
+const provenance =
+  JSON.parse(
+    await readFile(
+      path.join(
+        projectRoot,
+        '.data',
+        'migration-provenance',
+        'latest.json',
+      ),
+      'utf8',
+    ),
+  ) as MigrationProvenanceArtifact;
+
+session.schemaVersion =
+  6;
+
+session.contentBinding
+  .fingerprintVersion =
+  4;
+
+session.provenanceFingerprint =
+  provenance.lineageFingerprint;
+
+session.provenanceBinding = {
+  fingerprintVersion:
+    1,
+
+  expectedProvenanceFingerprint:
+    provenance.lineageFingerprint,
+
+  recalculatedProvenanceFingerprint:
+    provenance.lineageFingerprint,
+
+  gateProvenanceFingerprint:
+    provenance.lineageFingerprint,
+
+  receiptProvenanceFingerprint:
+    provenance.lineageFingerprint,
+
+  matchesGate:
+    true,
+
+  executionAllowed:
+    false,
+};
+
+session.source
+  .provenanceGeneratedAt =
+    provenance.generatedAt;
+
+if (
+  !session.receiptClaim
+) {
+  throw new Error(
+    'Fixture histórico sin Receipt Claim.',
+  );
+}
+
+session.receiptClaim
+  .provenanceFingerprint =
+    provenance.lineageFingerprint;
 
 const rawSnapshot =
   JSON.parse(
@@ -381,7 +458,131 @@ const envelopeMismatchBlocked =
 
 /*
  * ========================================================
- * TEST 7 — RECEIPT VENCIDO
+ * TEST 7 — PROVENANCE BINDING MISMATCH
+ *
+ * Si el binding cambia después de crear la Session:
+ * - Guard bloquea;
+ * - intent queda null;
+ * - el adapter simulado recibe cero acciones.
+ * ========================================================
+ */
+
+const wrongProvenanceSession =
+  structuredClone(
+    session,
+  );
+
+wrongProvenanceSession
+  .provenanceBinding
+  .recalculatedProvenanceFingerprint =
+    wrongProvenanceSession
+      .provenanceFingerprint ===
+        'a'.repeat(64)
+      ? 'b'.repeat(64)
+      : 'a'.repeat(64);
+
+const wrongProvenanceGuard =
+  evaluateSingleOperationCanary({
+    session:
+      wrongProvenanceSession,
+
+    baseline,
+
+    currentSnapshot:
+      normalized,
+
+    now:
+      validNow,
+  });
+
+const provenanceTamperAdapter =
+  new SimulatedCanaryAdapter();
+
+/*
+ * Este branch solo se ejecutaría si el Guard
+ * fallara y produjera un intent indebidamente.
+ *
+ * Sigue siendo adapter SIMULADO, nunca Discord.
+ */
+if (
+  wrongProvenanceGuard.intent
+) {
+  await provenanceTamperAdapter
+    .simulateCreateRole(
+      wrongProvenanceGuard.intent,
+    );
+}
+
+const provenanceMismatchBlocked =
+  wrongProvenanceGuard.status ===
+    'blocked' &&
+  wrongProvenanceGuard.intent ===
+    null &&
+  wrongProvenanceGuard.checks.some(
+    (check) =>
+      check.id ===
+        'provenance_binding' &&
+      check.status ===
+        'block',
+  ) &&
+  provenanceTamperAdapter
+    .getActions()
+    .length ===
+    0 &&
+  provenanceTamperAdapter
+    .executionEnabled ===
+    false;
+
+/*
+ * ========================================================
+ * TEST 8 — PROVENANCE BINDING AUSENTE
+ *
+ * Una Session deserializada/legacy sin provenanceBinding
+ * debe bloquear limpiamente, nunca lanzar TypeError.
+ * ========================================================
+ */
+
+const missingProvenanceBindingSession =
+  structuredClone(
+    session,
+  );
+
+delete (
+  missingProvenanceBindingSession as unknown as {
+    provenanceBinding?: unknown;
+  }
+).provenanceBinding;
+
+const missingProvenanceBindingGuard =
+  evaluateSingleOperationCanary({
+    session:
+      missingProvenanceBindingSession,
+
+    baseline,
+
+    currentSnapshot:
+      normalized,
+
+    now:
+      validNow,
+  });
+
+const missingProvenanceBindingBlocked =
+  missingProvenanceBindingGuard.status ===
+    'blocked' &&
+  missingProvenanceBindingGuard.intent ===
+    null &&
+  missingProvenanceBindingGuard.checks.some(
+    (check) =>
+      check.id ===
+        'provenance_binding' &&
+      check.status ===
+        'block',
+  );
+
+/*
+ * ========================================================
+ * TEST 9 — RECEIPT VENCIDO
  * ========================================================
  */
 
@@ -711,6 +912,8 @@ const success =
   privilegedNameBlocked &&
   contentMismatchBlocked &&
   envelopeMismatchBlocked &&
+  provenanceMismatchBlocked &&
+  missingProvenanceBindingBlocked &&
   expiredReceiptBlocked &&
   staleSnapshotBlocked &&
   driftBlocked &&

@@ -29,11 +29,16 @@ import type {
 } from './operationTypes.js';
 
 import type {
+  MigrationProvenanceArtifact,
+} from './migrationProvenanceTypes.js';
+
+import type {
   DiscordMigrationPreflight,
 } from './preflightTypes.js';
 
 import type {
   DiscordBindings,
+  MigrationPlan,
 } from './types.js';
 
 const projectRoot =
@@ -120,6 +125,24 @@ const bindings =
     'discord-bindings.json',
   );
 
+const plan =
+  await readJson<
+    MigrationPlan
+  >(
+    '.data',
+    'migration-plans',
+    'latest.json',
+  );
+
+const provenance =
+  await readJson<
+    MigrationProvenanceArtifact
+  >(
+    '.data',
+    'migration-provenance',
+    'latest.json',
+  );
+
 const operations =
   await readJson<
     MigrationOperationsPlan
@@ -179,6 +202,8 @@ const syntheticNow =
 const baseline =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint,
 
       snapshot,
@@ -198,9 +223,9 @@ const baseline =
 
 const fingerprintFormatValid =
   baseline.schemaVersion ===
-    4 &&
+    5 &&
   baseline.fingerprintVersion ===
-    3 &&
+    4 &&
   baseline.envelopeFingerprintVersion ===
     1 &&
   /^[a-f0-9]{64}$/i.test(
@@ -251,6 +276,8 @@ renamedOperation.desiredName =
 const operationGate =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint,
 
       snapshot,
@@ -311,6 +338,8 @@ reorderedOperations
 const orderGate =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint,
 
       snapshot,
@@ -364,6 +393,8 @@ changedBindings.resources[
 const bindingGate =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint,
 
       snapshot,
@@ -413,6 +444,8 @@ previewStep.label =
 const previewGate =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint,
 
       snapshot,
@@ -462,6 +495,8 @@ snapshotChannel.name =
 const snapshotGate =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint,
 
       snapshot:
@@ -504,6 +539,8 @@ changedPreflight
 const preflightGate =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint,
 
       snapshot,
@@ -553,6 +590,8 @@ hierarchyRole.desiredName =
 const hierarchyGate =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint,
 
       snapshot,
@@ -602,6 +641,8 @@ blueprintCategory.name =
 const blueprintGate =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint:
         changedBlueprint,
 
@@ -645,6 +686,8 @@ const changedBlueprintDetected =
 const canonicalGate =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint,
 
       snapshot:
@@ -692,6 +735,8 @@ const objectKeyOrderIndependent =
 const laterGate =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint,
 
       snapshot,
@@ -726,6 +771,8 @@ const laterBlueprint =
 const blueprintTimeGate =
   createMigrationGate(
     {
+      plan,
+      provenance,
       blueprint:
         laterBlueprint,
 
@@ -764,7 +811,7 @@ const success =
 
 console.log('');
 console.log(
-  '🔐 Migration Gate Content Fingerprint v3',
+  '🔐 Migration Gate Content Fingerprint v4',
 );
 console.log('');
 

@@ -14,8 +14,16 @@ import type {
 } from '../inspector/types.js';
 
 import type {
+  MigrationPlan,
+} from './types.js';
+
+import type {
   MigrationOperationsPlan,
 } from './operationTypes.js';
+
+import type {
+  MigrationProvenanceArtifact,
+} from './migrationProvenanceTypes.js';
 
 import type {
   DiscordExecutionPreview,
@@ -88,6 +96,24 @@ const bindings =
     snapshot.guild.id,
   );
 
+const plan =
+  await readJson<
+    MigrationPlan
+  >(
+    '.data',
+    'migration-plans',
+    'latest.json',
+  );
+
+const provenance =
+  await readJson<
+    MigrationProvenanceArtifact
+  >(
+    '.data',
+    'migration-provenance',
+    'latest.json',
+  );
+
 const operations =
   await readJson<
     MigrationOperationsPlan
@@ -145,6 +171,8 @@ const gate =
       blueprint,
       snapshot,
       bindings,
+      plan,
+      provenance,
       operations,
       executionPreview:
         preview,
@@ -158,6 +186,8 @@ const gateArtifacts = {
   blueprint,
   snapshot,
   bindings,
+  plan,
+  provenance,
   preflight,
   hierarchy,
 };
@@ -553,6 +583,71 @@ const blueprintTamperBlocked =
     ?.status ===
     'block';
 
+/*
+ * TAMPER 5:
+ * El lineageFingerprint del Provenance cambia
+ * después de que Gate + Receipt autorizaron A.
+ *
+ * Debe bloquear ANTES de reclamar el Receipt.
+ */
+const foreignProvenanceArtifacts =
+  structuredClone(
+    gateArtifacts,
+  );
+
+const foreignLineageFingerprint =
+  gate.provenance.lineageFingerprint ===
+    'a'.repeat(64)
+      ? 'b'.repeat(64)
+      : 'a'.repeat(64);
+
+foreignProvenanceArtifacts
+  .provenance
+  .lineageFingerprint =
+    foreignLineageFingerprint;
+
+const foreignProvenanceTamper =
+  await createSingleUseExecutionSession({
+    operations,
+    preview,
+    gate,
+    receipt,
+
+    gateArtifacts:
+      foreignProvenanceArtifacts,
+
+    claimsDirectory:
+      path.join(
+        testRoot,
+        'foreign-provenance',
+      ),
+
+    now:
+      sessionTime,
+  });
+
+const foreignProvenanceCheck =
+  foreignProvenanceTamper.preflight
+    .checks.find(
+      (check) =>
+        check.id ===
+          'provenance_binding',
+    );
+
+const foreignProvenanceBlocked =
+  foreignProvenanceTamper.status ===
+    'blocked' &&
+  foreignProvenanceTamper.blockReason ===
+    'validation_failed' &&
+  !foreignProvenanceTamper
+    .receiptClaimed &&
+  foreignProvenanceTamper
+    .claimMarkerPath ===
+    null &&
+  foreignProvenanceCheck
+    ?.status ===
+    'block';
+
 const receiptProtectedBeforeClaim =
   !operationTamper
     .receiptClaimed &&
@@ -561,6 +656,8 @@ const receiptProtectedBeforeClaim =
   !bindingsTamper
     .receiptClaimed &&
   !blueprintTamper
+    .receiptClaimed &&
+  !foreignProvenanceTamper
     .receiptClaimed;
 
 const executionStillDisabled =
@@ -580,6 +677,9 @@ const executionStillDisabled =
     false &&
   blueprintTamper
     .executionAllowed ===
+    false &&
+  foreignProvenanceTamper
+    .executionAllowed ===
     false;
 
 const success =
@@ -588,6 +688,7 @@ const success =
   previewTamperBlocked &&
   bindingsTamperBlocked &&
   blueprintTamperBlocked &&
+  foreignProvenanceBlocked &&
   receiptProtectedBeforeClaim &&
   executionStillDisabled;
 
@@ -598,7 +699,7 @@ console.log(
 console.log('');
 
 console.log(
-  `Baseline reproduce Gate schema v4 / Content v3: ${baselinePasses ? 'SÍ' : 'NO'}`,
+  `Baseline reproduce Gate schema v5 / Content v4: ${baselinePasses ? 'SÍ' : 'NO'}`,
 );
 
 console.log(

@@ -18,6 +18,10 @@ import type {
 } from './operationTypes.js';
 
 import type {
+  MigrationProvenanceArtifact,
+} from './migrationProvenanceTypes.js';
+
+import type {
   DiscordExecutionPreview,
 } from './executionTypes.js';
 
@@ -31,6 +35,7 @@ import type {
 
 import type {
   DiscordBindings,
+  MigrationPlan,
 } from './types.js';
 
 import {
@@ -86,6 +91,24 @@ const bindings =
   >(
     '.data',
     'discord-bindings.json',
+  );
+
+const plan =
+  await readJson<
+    MigrationPlan
+  >(
+    '.data',
+    'migration-plans',
+    'latest.json',
+  );
+
+const provenance =
+  await readJson<
+    MigrationProvenanceArtifact
+  >(
+    '.data',
+    'migration-provenance',
+    'latest.json',
   );
 
 const operations =
@@ -145,6 +168,8 @@ const gate =
       blueprint,
       snapshot,
       bindings,
+      plan,
+      provenance,
       operations,
       executionPreview:
         preview,
@@ -217,11 +242,11 @@ const approved =
 
 const validInteractivePasses =
   gate.schemaVersion ===
-    4 &&
+    5 &&
   manifest.schemaVersion ===
-    2 &&
-  approved.schemaVersion ===
     3 &&
+  approved.schemaVersion ===
+    4 &&
   approved.status ===
     'approved' &&
   approved.summary
@@ -229,7 +254,11 @@ const validInteractivePasses =
   approved.gateFingerprint ===
     gate.fingerprint &&
   approved.gateEnvelopeFingerprint ===
-    gate.envelopeFingerprint;
+    gate.envelopeFingerprint &&
+  manifest.provenanceFingerprint ===
+    gate.provenance.lineageFingerprint &&
+  approved.provenanceFingerprint ===
+    gate.provenance.lineageFingerprint;
 
 const pipedInput =
   verifyConfirmationManifest(
@@ -365,6 +394,67 @@ const resealedAfterManifestBlocked =
   !resealedEnvelope.summary
     .approvalValid;
 
+/*
+ * ========================================================
+ * DOWNGRADE ATTACK
+ *
+ * Simula un Gate histórico cargado desde JSON:
+ * schema v4 / Content v3 / sin Provenance.
+ *
+ * Debe producir Manifest inválido y Receipt rechazado,
+ * nunca una excepción.
+ * ========================================================
+ */
+const downgradedGate =
+  structuredClone(
+    gate,
+  );
+
+const downgradedRuntime =
+  downgradedGate as unknown as {
+    schemaVersion: number;
+    fingerprintVersion: number;
+    provenance?: unknown;
+  };
+
+downgradedRuntime.schemaVersion =
+  4;
+
+downgradedRuntime.fingerprintVersion =
+  3;
+
+delete downgradedRuntime.provenance;
+
+const downgradedManifest =
+  createConfirmationManifest(
+    downgradedGate,
+    manifestTime,
+  );
+
+const downgradedReceipt =
+  verifyConfirmationManifest(
+    manifest,
+    downgradedGate,
+    phrase,
+    interactiveEvidence,
+    verifyTime,
+  );
+
+const downgradedGateBlocked =
+  downgradedManifest.status ===
+    'invalid' &&
+  downgradedManifest.requiredPhrase ===
+    null &&
+  downgradedManifest.checks.some(
+    (check) =>
+      check.status ===
+        'block',
+  ) &&
+  downgradedReceipt.status ===
+    'rejected' &&
+  !downgradedReceipt.summary
+    .approvalValid;
+
 const testRoot =
   path.join(
     projectRoot,
@@ -400,6 +490,9 @@ const firstClaim =
     gateEnvelopeFingerprint:
       gate.envelopeFingerprint,
 
+    provenanceFingerprint:
+      gate.provenance.lineageFingerprint,
+
     receiptId:
       approved.receiptId,
 
@@ -420,6 +513,9 @@ const secondClaim =
 
     gateEnvelopeFingerprint:
       gate.envelopeFingerprint,
+
+    provenanceFingerprint:
+      gate.provenance.lineageFingerprint,
 
     receiptId:
       approved.receiptId,
@@ -460,6 +556,7 @@ const success =
   usedEvidenceBlocked &&
   staleEnvelopeBlocked &&
   resealedAfterManifestBlocked &&
+  downgradedGateBlocked &&
   atomicSingleUsePasses &&
   receiptDoesNotStorePhrase &&
   executionStillDisabled;

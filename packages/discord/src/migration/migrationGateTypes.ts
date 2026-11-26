@@ -14,7 +14,7 @@ export interface MigrationGateCheck {
 }
 
 export interface MigrationGate {
-  schemaVersion: 4;
+  schemaVersion: 5;
 
   generatedAt: string;
 
@@ -28,7 +28,7 @@ export interface MigrationGate {
    * para ligar criptográficamente el Gate
    * con sus artefactos de entrada.
    */
-  fingerprintVersion: 3;
+  fingerprintVersion: 4;
 
   fingerprint: string;
 
@@ -70,6 +70,28 @@ export interface MigrationGate {
     ageMinutes: number;
 
     maximumAgeMinutes: number;
+  };
+
+  provenance: {
+    schemaVersion: 1;
+
+    fingerprintVersion: 1;
+
+    lineageFingerprint: string;
+
+    generatedAt: string;
+
+    guildId: string;
+
+    summary: {
+      pass: number;
+
+      block: number;
+
+      valid: boolean;
+    };
+
+    executionAllowed: false;
   };
 
   checks: MigrationGateCheck[];
