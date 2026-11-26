@@ -54,7 +54,8 @@
     "test:discord-canary-transport": "npm run test:canary-transport --workspace=@the-clock/discord",
     "test:discord-discordjs-canary-gateway": "npm run test:discordjs-canary-gateway --workspace=@the-clock/discord",
     "test:discord-action-time-canary": "npm run test:action-time-canary --workspace=@the-clock/discord",
-    "test:discord-migration-provenance": "npm run test:migration-provenance --workspace=@the-clock/discord"
+    "test:discord-migration-provenance": "npm run test:migration-provenance --workspace=@the-clock/discord",
+    "migration:provenance:discord": "npm run migration:provenance --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",

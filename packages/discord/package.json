@@ -46,7 +46,8 @@
     "test:canary-transport": "tsx src/migration/testSingleUseCanaryTransport.ts",
     "test:discordjs-canary-gateway": "tsx src/migration/testDiscordJsCanaryRoleGateway.ts",
     "test:action-time-canary": "tsx src/migration/testActionTimeCanaryOrchestrator.ts",
-    "test:migration-provenance": "tsx src/migration/testMigrationProvenance.ts"
+    "test:migration-provenance": "tsx src/migration/testMigrationProvenance.ts",
+    "migration:provenance": "tsx src/migration/runMigrationProvenance.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",
