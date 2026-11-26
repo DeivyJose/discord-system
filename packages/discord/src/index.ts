@@ -508,3 +508,19 @@ export {
 export type {
   DiscordJsCanaryRoleGatewayErrorCode,
 } from './migration/discordJsCanaryRoleGateway.js';
+
+export type {
+  ActionTimeCanaryCheck,
+  ActionTimeCanaryCheckStatus,
+  ActionTimeCanaryFailure,
+  ActionTimeCanaryFailureStage,
+  ActionTimeCanaryOptions,
+  ActionTimeCanaryResult,
+  ActionTimeCanarySnapshotProvider,
+  ActionTimeCanaryStatus,
+  ActionTimeCanaryTransport,
+} from './migration/actionTimeCanaryTypes.js';
+
+export {
+  runActionTimeCanary,
+} from './migration/actionTimeCanaryOrchestrator.js';

@@ -54,8 +54,11 @@ export interface CanaryRoleIntent {
   permissions: '0';
 
   /**
-   * Este intent solo puede utilizarse
-   * por el adapter simulado de Canary v1.
+   * Intent estrictamente limitado al flujo Canary.
+   *
+   * executionAllowed permanece false porque el
+   * intent por sí mismo nunca constituye una
+   * autorización general para ejecutar Discord.
    */
   executionAllowed: false;
 }
