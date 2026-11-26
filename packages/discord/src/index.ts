@@ -486,3 +486,16 @@ export {
 export type {
   SimulatedCanaryAdapterErrorCode,
 } from './migration/simulatedCanaryAdapter.js';
+
+export type {
+  CanaryObservedRole,
+  CanaryRoleCreatePayload,
+  CanaryRoleGateway,
+  SingleUseCanaryTransportErrorCode,
+  SingleUseCanaryTransportResult,
+} from './migration/canaryTransportTypes.js';
+
+export {
+  SingleUseCanaryTransport,
+  SingleUseCanaryTransportError,
+} from './migration/singleUseCanaryTransport.js';
