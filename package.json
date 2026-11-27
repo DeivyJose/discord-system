@@ -65,7 +65,9 @@
     "test:discord-real-canary-run-claim": "npm run test:real-canary-run-claim --workspace=@the-clock/discord",
     "run:real-canary": "npm run run:real-canary --workspace=@the-clock/discord",
     "test:discord-post-canary-checkpoint": "npm run test:post-canary-checkpoint --workspace=@the-clock/discord",
-    "checkpoint:discord-post-canary": "npm run checkpoint:post-canary --workspace=@the-clock/discord"
+    "checkpoint:discord-post-canary": "npm run checkpoint:post-canary --workspace=@the-clock/discord",
+    "plan:discord-role-phase": "npm run plan:role-phase --workspace=@the-clock/discord",
+    "test:discord-role-phase-plan": "npm run test:role-phase-plan --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",
