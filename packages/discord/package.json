@@ -53,7 +53,9 @@
     "probe:canary-one-shot-arming-live": "node --env-file=../../.env --import tsx src/migration/probeLiveCanaryOneShotArming.ts",
     "test:build-disabled-canary-transport": "tsx src/migration/testBuildDisabledCanaryTransport.ts",
     "probe:real-canary-disabled-live": "node --env-file=../../.env --import tsx src/migration/probeLiveRealCanaryDisabled.ts",
-    "test:real-canary-composition": "tsx src/migration/testRealCanaryComposition.ts"
+    "test:real-canary-composition": "tsx src/migration/testRealCanaryComposition.ts",
+    "test:real-canary-run-claim": "tsx src/migration/testRealCanaryRunClaim.ts",
+    "run:real-canary": "node --env-file=../../.env --import tsx src/migration/runRealCanary.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

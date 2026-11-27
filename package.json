@@ -61,7 +61,9 @@
     "probe:discord-canary-one-shot-arming-live": "npm run probe:canary-one-shot-arming-live --workspace=@the-clock/discord",
     "test:discord-build-disabled-canary-transport": "npm run test:build-disabled-canary-transport --workspace=@the-clock/discord",
     "probe:discord-real-canary-disabled-live": "npm run probe:real-canary-disabled-live --workspace=@the-clock/discord",
-    "test:discord-real-canary-composition": "npm run test:real-canary-composition --workspace=@the-clock/discord"
+    "test:discord-real-canary-composition": "npm run test:real-canary-composition --workspace=@the-clock/discord",
+    "test:discord-real-canary-run-claim": "npm run test:real-canary-run-claim --workspace=@the-clock/discord",
+    "run:real-canary": "npm run run:real-canary --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",

@@ -725,7 +725,7 @@ console.log(
 );
 
 console.log(
-  'RUN:REAL-CANARY: NO EXISTE',
+  'RUN:REAL-CANARY: ONE-SHOT EXACTO; EXECUTOR GENÉRICO: NO',
 );
 
 console.log(
