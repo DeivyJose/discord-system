@@ -59,7 +59,8 @@
     "test:post-canary-checkpoint": "tsx src/migration/testPostCanaryCheckpoint.ts",
     "checkpoint:post-canary": "tsx src/migration/runPostCanaryCheckpoint.ts",
     "plan:role-phase": "tsx src/migration/runRolePhasePlan.ts",
-    "test:role-phase-plan": "tsx src/migration/testRolePhasePlan.ts"
+    "test:role-phase-plan": "tsx src/migration/testRolePhasePlan.ts",
+    "test:role-phase-execution-contract": "tsx src/migration/testRolePhaseExecutionContract.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",

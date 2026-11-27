@@ -67,7 +67,8 @@
     "test:discord-post-canary-checkpoint": "npm run test:post-canary-checkpoint --workspace=@the-clock/discord",
     "checkpoint:discord-post-canary": "npm run checkpoint:post-canary --workspace=@the-clock/discord",
     "plan:discord-role-phase": "npm run plan:role-phase --workspace=@the-clock/discord",
-    "test:discord-role-phase-plan": "npm run test:role-phase-plan --workspace=@the-clock/discord"
+    "test:discord-role-phase-plan": "npm run test:role-phase-plan --workspace=@the-clock/discord",
+    "test:discord-role-phase-execution-contract": "npm run test:role-phase-execution-contract --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",
