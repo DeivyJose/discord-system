@@ -556,8 +556,8 @@ export async function runActionTimeCanary(
     checks,
     'action_time_guard',
     guardReady,
-    'Canary Guard válido inmediatamente antes del transporte.',
-    'Canary Guard bloqueó la operación antes del transporte.',
+    'Canary Guard inicial válido antes de autorización humana.',
+    'Canary Guard inicial bloqueó antes de autorización humana.',
   );
 
   if (
@@ -613,13 +613,16 @@ export async function runActionTimeCanary(
    * 3. AUTORIZACIÓN HUMANA ACTION-TIME
    * ======================================================
    *
-   * Esta barrera ocurre DESPUÉS de:
-   * - snapshot PRE;
-   * - normalización;
-   * - Canary Guard.
+   * Esta autorización se concede sobre el intent
+   * producido por el primer Guard.
    *
-   * Y ANTES de cualquier intento del transporte.
+   * Una respuesta true NO alcanza directamente
+   * el transporte.
    */
+  const authorizedIntent =
+    structuredClone(
+      guard.intent,
+    );
 
   let actionAuthorized =
     false;
@@ -629,7 +632,7 @@ export async function runActionTimeCanary(
       await options
         .authorizeIntent(
           structuredClone(
-            guard.intent,
+            authorizedIntent,
           ),
         );
   } catch (
@@ -744,15 +747,354 @@ export async function runActionTimeCanary(
 
   /*
    * ======================================================
-   * 4. ÚNICA EJECUCIÓN DEL TRANSPORTE
+   * 4. SEGUNDO SNAPSHOT PRE DESPUÉS DE AUTORIZACIÓN
+   * ======================================================
+   *
+   * Cierra la ventana TOCTOU introducida por el tiempo
+   * que el humano puede tardar en confirmar.
+   *
+   * Todavía NO se ha llamado al transporte.
+   */
+  let postAuthorizationPreSnapshot:
+    DiscordGuildSnapshot;
+
+  try {
+    postAuthorizationPreSnapshot =
+      await options
+        .snapshotProvider
+        .capture();
+  } catch (
+    error
+  ) {
+    addCheck(
+      checks,
+      'post_authorization_pre_snapshot_capture',
+      false,
+      '',
+      `No fue posible capturar PRE2 después de autorización: ${errorMessage(error)}`,
+    );
+
+    return buildResult({
+      startedAt,
+
+      finishedAt:
+        currentTime(
+          options,
+        ).toISOString(),
+
+      status:
+        'blocked_before_transport',
+
+      checks,
+
+      guard,
+
+      transportResult,
+
+      preSnapshotCapturedAt:
+        preSnapshot.capturedAt,
+
+      postSnapshotCapturedAt:
+        null,
+
+      transportAttempts:
+        options.transport
+          .getAttempts(),
+
+      mutationCalls:
+        options.transport
+          .getMutationCalls(),
+
+      requiresManualInspection:
+        false,
+
+      failure: {
+        stage:
+          'post_authorization_inspection',
+
+        message:
+          errorMessage(
+            error,
+          ),
+      },
+    });
+  }
+
+  addCheck(
+    checks,
+    'post_authorization_pre_snapshot_capture',
+    true,
+    `PRE2 capturado después de autorización: ${postAuthorizationPreSnapshot.capturedAt}.`,
+    '',
+  );
+
+  let postAuthorizationNormalizedPre;
+
+  try {
+    postAuthorizationNormalizedPre =
+      normalizeDiscordStructureSnapshot(
+        postAuthorizationPreSnapshot,
+      );
+  } catch (
+    error
+  ) {
+    addCheck(
+      checks,
+      'post_authorization_pre_snapshot_normalization',
+      false,
+      '',
+      `PRE2 inválido después de autorización: ${errorMessage(error)}`,
+    );
+
+    return buildResult({
+      startedAt,
+
+      finishedAt:
+        currentTime(
+          options,
+        ).toISOString(),
+
+      status:
+        'blocked_before_transport',
+
+      checks,
+
+      guard,
+
+      transportResult,
+
+      preSnapshotCapturedAt:
+        postAuthorizationPreSnapshot
+          .capturedAt,
+
+      postSnapshotCapturedAt:
+        null,
+
+      transportAttempts:
+        options.transport
+          .getAttempts(),
+
+      mutationCalls:
+        options.transport
+          .getMutationCalls(),
+
+      requiresManualInspection:
+        false,
+
+      failure: {
+        stage:
+          'post_authorization_inspection',
+
+        message:
+          errorMessage(
+            error,
+          ),
+      },
+    });
+  }
+
+  addCheck(
+    checks,
+    'post_authorization_pre_snapshot_normalization',
+    true,
+    'PRE2 normalizado correctamente después de autorización.',
+    '',
+  );
+
+  /*
+   * ======================================================
+   * 5. SEGUNDO GUARD INMEDIATAMENTE ANTES DEL TRANSPORTE
    * ======================================================
    */
+  const postAuthorizationGuard =
+    evaluateSingleOperationCanary({
+      session:
+        options.session,
 
+      baseline:
+        options.baseline,
+
+      currentSnapshot:
+        postAuthorizationNormalizedPre,
+
+      now:
+        currentTime(
+          options,
+        ),
+    });
+
+  const postAuthorizationGuardReady =
+    postAuthorizationGuard.status ===
+      'ready_for_simulation' &&
+    postAuthorizationGuard.intent !==
+      null;
+
+  addCheck(
+    checks,
+    'post_authorization_guard',
+    postAuthorizationGuardReady,
+    'Segundo Canary Guard válido después de autorización.',
+    'Segundo Canary Guard bloqueó antes del transporte.',
+  );
+
+  if (
+    !postAuthorizationGuardReady ||
+    !postAuthorizationGuard.intent
+  ) {
+    return buildResult({
+      startedAt,
+
+      finishedAt:
+        currentTime(
+          options,
+        ).toISOString(),
+
+      status:
+        'blocked_before_transport',
+
+      checks,
+
+      guard:
+        postAuthorizationGuard,
+
+      transportResult,
+
+      preSnapshotCapturedAt:
+        postAuthorizationPreSnapshot
+          .capturedAt,
+
+      postSnapshotCapturedAt:
+        null,
+
+      transportAttempts:
+        options.transport
+          .getAttempts(),
+
+      mutationCalls:
+        options.transport
+          .getMutationCalls(),
+
+      requiresManualInspection:
+        false,
+
+      failure: {
+        stage:
+          'post_authorization_guard',
+
+        message:
+          'El segundo Canary Guard bloqueó después de la autorización.',
+      },
+    });
+  }
+
+  /*
+   * La autorización humana fue dada para authorizedIntent.
+   *
+   * El intent producido por PRE2 + Guard2 debe ser
+   * exactamente idéntico antes de permitir transporte.
+   */
+  /*
+   * Guard2 ya confirmó que intent !== null.
+   *
+   * Conservamos una copia concreta para que:
+   * - TypeScript mantenga el narrowing;
+   * - la comparación use exactamente el intent
+   *   que llegará al transporte;
+   * - no dependamos de la variable guard reasignada.
+   */
+  const executionIntent =
+    structuredClone(
+      postAuthorizationGuard.intent,
+    );
+
+  const postAuthorizationIntentMatches =
+    JSON.stringify(
+      authorizedIntent,
+    ) ===
+    JSON.stringify(
+      executionIntent,
+    );
+
+  addCheck(
+    checks,
+    'post_authorization_intent_match',
+    postAuthorizationIntentMatches,
+    'El intent posterior a autorización coincide exactamente con el intent autorizado.',
+    'El intent cambió después de la autorización humana.',
+  );
+
+  if (
+    !postAuthorizationIntentMatches
+  ) {
+    return buildResult({
+      startedAt,
+
+      finishedAt:
+        currentTime(
+          options,
+        ).toISOString(),
+
+      status:
+        'blocked_before_transport',
+
+      checks,
+
+      guard:
+        postAuthorizationGuard,
+
+      transportResult,
+
+      preSnapshotCapturedAt:
+        postAuthorizationPreSnapshot
+          .capturedAt,
+
+      postSnapshotCapturedAt:
+        null,
+
+      transportAttempts:
+        options.transport
+          .getAttempts(),
+
+      mutationCalls:
+        options.transport
+          .getMutationCalls(),
+
+      requiresManualInspection:
+        false,
+
+      failure: {
+        stage:
+          'post_authorization_guard',
+
+        message:
+          'El intent cambió entre Guard1 y Guard2.',
+      },
+    });
+  }
+
+  /*
+   * Desde aquí PRE2 se convierte en el PRE efectivo.
+   *
+   * Las postcondiciones posteriores deben comparar
+   * Discord POST contra el estado observado
+   * inmediatamente antes del transporte.
+   */
+  preSnapshot =
+    postAuthorizationPreSnapshot;
+
+  guard =
+    postAuthorizationGuard;
+
+  /*
+   * ======================================================
+   * 6. ÚNICA EJECUCIÓN DEL TRANSPORTE
+   * ======================================================
+   */
   try {
     transportResult =
       await options.transport
         .execute(
-          guard.intent,
+          executionIntent,
         );
   } catch (
     error

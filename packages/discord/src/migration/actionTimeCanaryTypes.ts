@@ -42,6 +42,8 @@ export type ActionTimeCanaryFailureStage =
   | 'pre_inspection'
   | 'guard'
   | 'authorization'
+  | 'post_authorization_inspection'
+  | 'post_authorization_guard'
   | 'transport'
   | 'post_inspection'
   | 'postcondition';
@@ -93,8 +95,14 @@ export interface ActionTimeCanaryOptions {
     ActionTimeCanaryTransport;
 
   /**
-   * Frontera humana inmediatamente posterior al Guard
-   * e inmediatamente anterior al transporte.
+   * Frontera humana posterior al primer Guard.
+   *
+   * Una autorización true NO llega directamente
+   * al transporte:
+   *
+   * después debe ocurrir una segunda inspección,
+   * un segundo Guard y una comparación exacta
+   * del intent autorizado.
    *
    * El orchestrator nunca debe considerar suficiente
    * una aprobación obtenida antes del snapshot PRE.

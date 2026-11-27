@@ -376,6 +376,9 @@ const validPost =
 const validProvider =
   new QueueSnapshotProvider([
     validPre,
+    structuredClone(
+      validPre,
+    ),
     validPost,
   ]);
 
@@ -420,7 +423,7 @@ const validPasses =
     .requiresManualInspection ===
     false &&
   validProvider.captures ===
-    2 &&
+    3 &&
   validGateway.createCalls ===
     1;
 
@@ -493,6 +496,204 @@ const actionAuthorizationBlocked =
     .getMutationCalls() ===
     0 &&
   deniedTransport
+    .isConsumed() ===
+    false;
+
+/*
+ * ========================================================
+ * TEST — DRIFT DURANTE AUTORIZACIÓN
+ *
+ * Guard1 pasa.
+ * La autorización humana devuelve true.
+ * PRE2 observa un cambio estructural.
+ * Guard2 debe bloquear con 0 mutaciones.
+ * ========================================================
+ */
+
+const postAuthorizationDrift =
+  structuredClone(
+    validPre,
+  );
+
+const postAuthorizationDriftChannel =
+  postAuthorizationDrift
+    .channels
+    .find(
+      (channel) =>
+        channel.typeName !==
+          'GuildCategory',
+    );
+
+if (
+  !postAuthorizationDriftChannel
+) {
+  throw new Error(
+    'Snapshot sin canal para drift post-autorización.',
+  );
+}
+
+postAuthorizationDriftChannel.name =
+  `${postAuthorizationDriftChannel.name}-TOCTOU`;
+
+const postAuthorizationDriftProvider =
+  new QueueSnapshotProvider([
+    structuredClone(
+      validPre,
+    ),
+    postAuthorizationDrift,
+  ]);
+
+const postAuthorizationDriftGateway =
+  new FakeGateway();
+
+const postAuthorizationDriftTransport =
+  new SingleUseCanaryTransport(
+    postAuthorizationDriftGateway,
+  );
+
+const postAuthorizationDriftResult =
+  await runActionTimeCanary({
+    session,
+
+    baseline,
+
+    snapshotProvider:
+      postAuthorizationDriftProvider,
+
+    transport:
+      postAuthorizationDriftTransport,
+
+    authorizeIntent:
+      async () => true,
+
+    now:
+      () =>
+        new Date(
+          validNow,
+        ),
+  });
+
+const postAuthorizationDriftBlocked =
+  postAuthorizationDriftResult.status ===
+    'blocked_before_transport' &&
+  postAuthorizationDriftResult
+    .failure?.stage ===
+    'post_authorization_guard' &&
+  postAuthorizationDriftResult
+    .checks
+    .some(
+      (check) =>
+        check.id ===
+          'post_authorization_guard' &&
+        check.status ===
+          'block',
+    ) &&
+  postAuthorizationDriftProvider
+    .captures ===
+    2 &&
+  postAuthorizationDriftGateway
+    .createCalls ===
+    0 &&
+  postAuthorizationDriftTransport
+    .getAttempts() ===
+    0 &&
+  postAuthorizationDriftTransport
+    .getMutationCalls() ===
+    0 &&
+  postAuthorizationDriftTransport
+    .isConsumed() ===
+    false;
+
+/*
+ * ========================================================
+ * TEST — RECEIPT EXPIRA DURANTE AUTORIZACIÓN
+ *
+ * Guard1 ocurre con Receipt vigente.
+ * Durante authorizeIntent avanzamos el reloj
+ * exactamente hasta receiptExpiresAt.
+ * Guard2 debe bloquear con 0 mutaciones.
+ * ========================================================
+ */
+
+let postAuthorizationNow =
+  validNow;
+
+const postAuthorizationExpiryProvider =
+  new QueueSnapshotProvider([
+    structuredClone(
+      validPre,
+    ),
+    structuredClone(
+      validPre,
+    ),
+  ]);
+
+const postAuthorizationExpiryGateway =
+  new FakeGateway();
+
+const postAuthorizationExpiryTransport =
+  new SingleUseCanaryTransport(
+    postAuthorizationExpiryGateway,
+  );
+
+const postAuthorizationExpiryResult =
+  await runActionTimeCanary({
+    session,
+
+    baseline,
+
+    snapshotProvider:
+      postAuthorizationExpiryProvider,
+
+    transport:
+      postAuthorizationExpiryTransport,
+
+    authorizeIntent:
+      async () => {
+        postAuthorizationNow =
+          new Date(
+            session.source
+              .receiptExpiresAt,
+          );
+
+        return true;
+      },
+
+    now:
+      () =>
+        new Date(
+          postAuthorizationNow,
+        ),
+  });
+
+const postAuthorizationExpiryBlocked =
+  postAuthorizationExpiryResult.status ===
+    'blocked_before_transport' &&
+  postAuthorizationExpiryResult
+    .failure?.stage ===
+    'post_authorization_guard' &&
+  postAuthorizationExpiryResult
+    .checks
+    .some(
+      (check) =>
+        check.id ===
+          'post_authorization_guard' &&
+        check.status ===
+          'block',
+    ) &&
+  postAuthorizationExpiryProvider
+    .captures ===
+    2 &&
+  postAuthorizationExpiryGateway
+    .createCalls ===
+    0 &&
+  postAuthorizationExpiryTransport
+    .getAttempts() ===
+    0 &&
+  postAuthorizationExpiryTransport
+    .getMutationCalls() ===
+    0 &&
+  postAuthorizationExpiryTransport
     .isConsumed() ===
     false;
 
@@ -683,6 +884,9 @@ const failureDiagnostic =
 const failureProvider =
   new QueueSnapshotProvider([
     failurePre,
+    structuredClone(
+      failurePre,
+    ),
     failureDiagnostic,
   ]);
 
@@ -728,7 +932,7 @@ const ambiguousFailureHandled =
     .requiresManualInspection ===
     true &&
   failureProvider.captures ===
-    2 &&
+    3 &&
   failureGateway.createCalls ===
     1;
 
@@ -801,6 +1005,9 @@ unsafeRole.permissions = [
 const unsafeProvider =
   new QueueSnapshotProvider([
     historicalSnapshot,
+    structuredClone(
+      historicalSnapshot,
+    ),
     unsafePost,
   ]);
 
@@ -891,6 +1098,9 @@ extraRolePost.roles.push({
 const extraRoleProvider =
   new QueueSnapshotProvider([
     historicalSnapshot,
+    structuredClone(
+      historicalSnapshot,
+    ),
     extraRolePost,
   ]);
 
@@ -967,6 +1177,9 @@ postChannel.name =
 const concurrentChannelProvider =
   new QueueSnapshotProvider([
     historicalSnapshot,
+    structuredClone(
+      historicalSnapshot,
+    ),
     concurrentChannelPost,
   ]);
 
@@ -1046,6 +1259,9 @@ existingRoleToChange.permissions = [
 const existingRoleChangeProvider =
   new QueueSnapshotProvider([
     historicalSnapshot,
+    structuredClone(
+      historicalSnapshot,
+    ),
     existingRoleChangePost,
   ]);
 
@@ -1133,6 +1349,9 @@ duplicateNamePost.roles.push({
 const duplicateNameProvider =
   new QueueSnapshotProvider([
     historicalSnapshot,
+    structuredClone(
+      historicalSnapshot,
+    ),
     duplicateNamePost,
   ]);
 
@@ -1206,6 +1425,9 @@ for (
 const positionShiftProvider =
   new QueueSnapshotProvider([
     historicalSnapshot,
+    structuredClone(
+      historicalSnapshot,
+    ),
     positionShiftPost,
   ]);
 
@@ -1252,6 +1474,8 @@ const positionShiftAccepted =
 const success =
   validPasses &&
   actionAuthorizationBlocked &&
+  postAuthorizationDriftBlocked &&
+  postAuthorizationExpiryBlocked &&
   secondRunBlocked &&
   preDriftBlocked &&
   staleBlocked &&
@@ -1273,6 +1497,16 @@ console.log('');
 console.log(
   `Camino válido completado: ${validPasses ? 'SÍ' : 'NO'}`,
 );
+
+console.log(
+  `Drift durante autorización bloqueado por Guard2: ${postAuthorizationDriftBlocked ? 'SÍ' : 'NO'}`,
+);
+
+console.log(
+  `Receipt expirado durante autorización bloqueado por Guard2: ${postAuthorizationExpiryBlocked ? 'SÍ' : 'NO'}`,
+);
+
+console.log('');
 
 console.log(
   `Segunda ejecución mismo transporte bloqueada: ${secondRunBlocked ? 'SÍ' : 'NO'}`,

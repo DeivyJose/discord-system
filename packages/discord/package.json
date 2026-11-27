@@ -48,7 +48,8 @@
     "test:action-time-canary": "tsx src/migration/testActionTimeCanaryOrchestrator.ts",
     "test:migration-provenance": "tsx src/migration/testMigrationProvenance.ts",
     "migration:provenance": "tsx src/migration/runMigrationProvenance.ts",
-    "probe:canary-readonly-live": "node --env-file=../../.env --import tsx src/migration/probeLiveCanaryReadOnly.ts"
+    "probe:canary-readonly-live": "node --env-file=../../.env --import tsx src/migration/probeLiveCanaryReadOnly.ts",
+    "test:action-time-human-authorization": "tsx src/migration/testActionTimeHumanAuthorization.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",
