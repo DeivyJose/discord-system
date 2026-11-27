@@ -41,6 +41,7 @@ export type ActionTimeCanaryStatus =
 export type ActionTimeCanaryFailureStage =
   | 'pre_inspection'
   | 'guard'
+  | 'authorization'
   | 'transport'
   | 'post_inspection'
   | 'postcondition';
@@ -90,6 +91,19 @@ export interface ActionTimeCanaryOptions {
 
   transport:
     ActionTimeCanaryTransport;
+
+  /**
+   * Frontera humana inmediatamente posterior al Guard
+   * e inmediatamente anterior al transporte.
+   *
+   * El orchestrator nunca debe considerar suficiente
+   * una aprobación obtenida antes del snapshot PRE.
+   */
+  authorizeIntent:
+    (
+      intent:
+        CanaryRoleIntent,
+    ) => Promise<boolean>;
 
   /**
    * Inyectable para tests históricos.

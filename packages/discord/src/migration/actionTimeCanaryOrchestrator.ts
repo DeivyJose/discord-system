@@ -610,7 +610,141 @@ export async function runActionTimeCanary(
 
   /*
    * ======================================================
-   * 3. ÚNICA EJECUCIÓN DEL TRANSPORTE
+   * 3. AUTORIZACIÓN HUMANA ACTION-TIME
+   * ======================================================
+   *
+   * Esta barrera ocurre DESPUÉS de:
+   * - snapshot PRE;
+   * - normalización;
+   * - Canary Guard.
+   *
+   * Y ANTES de cualquier intento del transporte.
+   */
+
+  let actionAuthorized =
+    false;
+
+  try {
+    actionAuthorized =
+      await options
+        .authorizeIntent(
+          structuredClone(
+            guard.intent,
+          ),
+        );
+  } catch (
+    error
+  ) {
+    addCheck(
+      checks,
+      'explicit_action_authorization',
+      false,
+      '',
+      `La autorización humana falló: ${errorMessage(error)}`,
+    );
+
+    return buildResult({
+      startedAt,
+
+      finishedAt:
+        currentTime(
+          options,
+        ).toISOString(),
+
+      status:
+        'blocked_before_transport',
+
+      checks,
+
+      guard,
+
+      transportResult,
+
+      preSnapshotCapturedAt:
+        preSnapshot.capturedAt,
+
+      postSnapshotCapturedAt:
+        null,
+
+      transportAttempts:
+        options.transport
+          .getAttempts(),
+
+      mutationCalls:
+        options.transport
+          .getMutationCalls(),
+
+      requiresManualInspection:
+        false,
+
+      failure: {
+        stage:
+          'authorization',
+
+        message:
+          'La autorización humana action-time produjo un error.',
+      },
+    });
+  }
+
+  addCheck(
+    checks,
+    'explicit_action_authorization',
+    actionAuthorized,
+    'Autorización humana action-time confirmada.',
+    'La autorización humana action-time fue rechazada.',
+  );
+
+  if (
+    !actionAuthorized
+  ) {
+    return buildResult({
+      startedAt,
+
+      finishedAt:
+        currentTime(
+          options,
+        ).toISOString(),
+
+      status:
+        'blocked_before_transport',
+
+      checks,
+
+      guard,
+
+      transportResult,
+
+      preSnapshotCapturedAt:
+        preSnapshot.capturedAt,
+
+      postSnapshotCapturedAt:
+        null,
+
+      transportAttempts:
+        options.transport
+          .getAttempts(),
+
+      mutationCalls:
+        options.transport
+          .getMutationCalls(),
+
+      requiresManualInspection:
+        false,
+
+      failure: {
+        stage:
+          'authorization',
+
+        message:
+          'La autorización humana action-time no fue concedida.',
+      },
+    });
+  }
+
+  /*
+   * ======================================================
+   * 4. ÚNICA EJECUCIÓN DEL TRANSPORTE
    * ======================================================
    */
 

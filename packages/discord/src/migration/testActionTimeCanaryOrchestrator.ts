@@ -194,8 +194,26 @@ function createPostSnapshot(
       pre,
     );
 
+  const preCapturedAt =
+    new Date(
+      pre.capturedAt,
+    ).getTime();
+
+  if (
+    !Number.isFinite(
+      preCapturedAt,
+    )
+  ) {
+    throw new Error(
+      'PRE snapshot tiene capturedAt inválido.',
+    );
+  }
+
   post.capturedAt =
-    '2026-11-17T02:23:01.000Z';
+    new Date(
+      preCapturedAt +
+        1_000,
+    ).toISOString();
 
   post.roles.push(
     expectedRole(),
@@ -381,6 +399,9 @@ const validResult =
     transport:
       validTransport,
 
+    authorizeIntent:
+      async () => true,
+
     now:
       () =>
         new Date(
@@ -405,6 +426,78 @@ const validPasses =
 
 /*
  * ========================================================
+ * TEST — AUTORIZACIÓN HUMANA RECHAZADA
+ *
+ * PRE + Guard deben ejecutarse.
+ * El transporte NO debe intentarse ni consumirse.
+ * ========================================================
+ */
+
+const deniedProvider =
+  new QueueSnapshotProvider([
+    structuredClone(
+      validPre,
+    ),
+  ]);
+
+const deniedGateway =
+  new FakeGateway();
+
+const deniedTransport =
+  new SingleUseCanaryTransport(
+    deniedGateway,
+  );
+
+const deniedResult =
+  await runActionTimeCanary({
+    session,
+
+    baseline,
+
+    snapshotProvider:
+      deniedProvider,
+
+    transport:
+      deniedTransport,
+
+    authorizeIntent:
+      async () => false,
+
+    now:
+      () =>
+        new Date(
+          validNow,
+        ),
+  });
+
+const actionAuthorizationBlocked =
+  deniedResult.status ===
+    'blocked_before_transport' &&
+  deniedResult.failure?.stage ===
+    'authorization' &&
+  deniedResult.checks.some(
+    (check) =>
+      check.id ===
+        'explicit_action_authorization' &&
+      check.status ===
+        'block',
+  ) &&
+  deniedProvider.captures ===
+    1 &&
+  deniedGateway.createCalls ===
+    0 &&
+  deniedTransport
+    .getAttempts() ===
+    0 &&
+  deniedTransport
+    .getMutationCalls() ===
+    0 &&
+  deniedTransport
+    .isConsumed() ===
+    false;
+
+/*
+ * ========================================================
  * TEST 2 — SEGUNDA EJECUCIÓN MISMO TRANSPORTE
  * ========================================================
  */
@@ -425,6 +518,9 @@ const secondRun =
 
     transport:
       validTransport,
+
+    authorizeIntent:
+      async () => true,
 
     now:
       () =>
@@ -495,6 +591,9 @@ const driftResult =
     transport:
       driftTransport,
 
+    authorizeIntent:
+      async () => true,
+
     now:
       () =>
         new Date(
@@ -543,6 +642,9 @@ const staleResult =
 
     transport:
       staleTransport,
+
+    authorizeIntent:
+      async () => true,
 
     now:
       () =>
@@ -607,6 +709,9 @@ const failureResult =
     transport:
       failureTransport,
 
+    authorizeIntent:
+      async () => true,
+
     now:
       () =>
         new Date(
@@ -643,6 +748,9 @@ const failureReplay =
 
     transport:
       failureTransport,
+
+    authorizeIntent:
+      async () => true,
 
     now:
       () =>
@@ -715,6 +823,9 @@ const unsafeResult =
 
     transport:
       unsafeTransport,
+
+    authorizeIntent:
+      async () => true,
 
     now:
       () =>
@@ -803,6 +914,9 @@ const extraRoleResult =
     transport:
       extraRoleTransport,
 
+    authorizeIntent:
+      async () => true,
+
     now:
       () =>
         new Date(
@@ -875,6 +989,9 @@ const concurrentChannelResult =
 
     transport:
       concurrentChannelTransport,
+
+    authorizeIntent:
+      async () => true,
 
     now:
       () =>
@@ -951,6 +1068,9 @@ const existingRoleChangeResult =
 
     transport:
       existingRoleChangeTransport,
+
+    authorizeIntent:
+      async () => true,
 
     now:
       () =>
@@ -1036,6 +1156,9 @@ const duplicateNameResult =
     transport:
       duplicateNameTransport,
 
+    authorizeIntent:
+      async () => true,
+
     now:
       () =>
         new Date(
@@ -1106,6 +1229,9 @@ const positionShiftResult =
     transport:
       positionShiftTransport,
 
+    authorizeIntent:
+      async () => true,
+
     now:
       () =>
         new Date(
@@ -1125,6 +1251,7 @@ const positionShiftAccepted =
 
 const success =
   validPasses &&
+  actionAuthorizationBlocked &&
   secondRunBlocked &&
   preDriftBlocked &&
   staleBlocked &&
