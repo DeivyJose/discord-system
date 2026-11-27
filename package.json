@@ -57,7 +57,8 @@
     "test:discord-migration-provenance": "npm run test:migration-provenance --workspace=@the-clock/discord",
     "migration:provenance:discord": "npm run migration:provenance --workspace=@the-clock/discord",
     "probe:discord-canary-readonly-live": "npm run probe:canary-readonly-live --workspace=@the-clock/discord",
-    "test:discord-action-time-human-authorization": "npm run test:action-time-human-authorization --workspace=@the-clock/discord"
+    "test:discord-action-time-human-authorization": "npm run test:action-time-human-authorization --workspace=@the-clock/discord",
+    "probe:discord-canary-one-shot-arming-live": "npm run probe:canary-one-shot-arming-live --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",

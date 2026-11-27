@@ -49,7 +49,8 @@
     "test:migration-provenance": "tsx src/migration/testMigrationProvenance.ts",
     "migration:provenance": "tsx src/migration/runMigrationProvenance.ts",
     "probe:canary-readonly-live": "node --env-file=../../.env --import tsx src/migration/probeLiveCanaryReadOnly.ts",
-    "test:action-time-human-authorization": "tsx src/migration/testActionTimeHumanAuthorization.ts"
+    "test:action-time-human-authorization": "tsx src/migration/testActionTimeHumanAuthorization.ts",
+    "probe:canary-one-shot-arming-live": "node --env-file=../../.env --import tsx src/migration/probeLiveCanaryOneShotArming.ts"
   },
   "dependencies": {
     "@the-clock/core": "0.1.0",
