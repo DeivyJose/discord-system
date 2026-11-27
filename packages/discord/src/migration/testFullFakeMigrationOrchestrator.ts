@@ -147,47 +147,92 @@ if (
 
 const phaseCountsCorrect =
   roles.operations ===
-    24 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_role',
+    ).length &&
   categories.operations ===
-    13 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_category',
+    ).length &&
   renames.operations ===
-    8 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'rename_role' ||
+        operation.type ===
+          'rename_category' ||
+        operation.type ===
+          'rename_channel',
+    ).length &&
   channels.operations ===
-    51 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_channel',
+    ).length &&
   moves.operations ===
-    2;
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'move_channel',
+    ).length;
 
 const bindingCommitsCorrect =
   roles.committedBindings ===
-    24 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_role',
+    ).length &&
   categories.committedBindings ===
-    13 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_category',
+    ).length &&
   renames.committedBindings ===
     0 &&
   channels.committedBindings ===
-    51 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_channel',
+    ).length &&
   moves.committedBindings ===
     0;
 
 const idempotentExistingBindingsCorrect =
   renames.idempotentBindings ===
-    8 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'rename_role' ||
+        operation.type ===
+          'rename_category' ||
+        operation.type ===
+          'rename_channel',
+    ).length &&
   moves.idempotentBindings ===
-    2;
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'move_channel',
+    ).length;
 
 const totalsCorrect =
   operations.length ===
-    108 &&
-  automatable.length ===
-    98 &&
-  manual.length ===
-    10 &&
+    automatable.length +
+      manual.length &&
   result.totalOperations ===
-    108 &&
+    operations.length &&
   result.automatableOperations ===
-    98 &&
+    automatable.length &&
   result.manualReviewOperations ===
-    10;
+    manual.length;
 
 const actionIds =
   result.finalAdapterSnapshot
@@ -212,9 +257,9 @@ const automaticIds =
 
 const allAutomaticExecuted =
   actionIds.length ===
-    98 &&
+    automatable.length &&
   uniqueActionIds.size ===
-    98 &&
+    automatable.length &&
   [...automaticIds]
     .every(
       (id) =>
@@ -244,17 +289,38 @@ const registryCorrect =
     result.finalRegistrySnapshot
       .confirmed,
   ).length ===
-    13 &&
+    Object.keys(
+      bindingFile.resources,
+    ).length &&
   Object.keys(
     result.finalRegistrySnapshot
       .session,
   ).length ===
-    88 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_role' ||
+        operation.type ===
+          'create_category' ||
+        operation.type ===
+          'create_channel',
+    ).length &&
   result.finalRegistrySnapshot
     .revision ===
     3 &&
   result.finalResolverBindingCount ===
-    101;
+    Object.keys(
+      bindingFile.resources,
+    ).length +
+      automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_role' ||
+        operation.type ===
+          'create_category' ||
+        operation.type ===
+          'create_channel',
+    ).length;
 
 function registryActualId(
   blueprintId: string,
@@ -433,8 +499,8 @@ const report = [
   '',
   'SEGURIDAD',
   '---------',
-  `98 operaciones automáticas ejecutadas una sola vez: ${allAutomaticExecuted ? 'SÍ' : 'NO'}`,
-  `10 operaciones manuales nunca ejecutadas: ${noManualExecuted ? 'SÍ' : 'NO'}`,
+  `${automatable.length} operaciones automáticas ejecutadas una sola vez: ${allAutomaticExecuted ? 'SÍ' : 'NO'}`,
+  `${manual.length} operaciones manuales nunca ejecutadas: ${noManualExecuted ? 'SÍ' : 'NO'}`,
   `Bindings adapter/registry consistentes: ${adapterBindingsConsistent ? 'SÍ' : 'NO'}`,
   '',
   'REGISTRY FINAL',

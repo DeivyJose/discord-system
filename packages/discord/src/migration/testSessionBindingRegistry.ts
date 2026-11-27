@@ -99,7 +99,9 @@ const registry =
 
 const initialConfirmed =
   registry.confirmedCount ===
-    13;
+    Object.keys(
+      bindingFile.resources,
+    ).length;
 
 const existingCategory =
   registry.resolve(

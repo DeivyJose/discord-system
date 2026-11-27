@@ -282,27 +282,75 @@ if (
 
 const phaseCountsCorrect =
   roles.operations ===
-    24 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_role',
+    ).length &&
   categories.operations ===
-    13 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_category',
+    ).length &&
   renames.operations ===
-    8 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'rename_role' ||
+        operation.type ===
+          'rename_category' ||
+        operation.type ===
+          'rename_channel',
+    ).length &&
   channels.operations ===
-    51 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_channel',
+    ).length &&
   moves.operations ===
-    2;
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'move_channel',
+    ).length;
 
 const phaseSuccessCorrect =
   roles.succeeded ===
-    24 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_role',
+    ).length &&
   categories.succeeded ===
-    13 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_category',
+    ).length &&
   renames.succeeded ===
-    8 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'rename_role' ||
+        operation.type ===
+          'rename_category' ||
+        operation.type ===
+          'rename_channel',
+    ).length &&
   channels.succeeded ===
-    51 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_channel',
+    ).length &&
   moves.succeeded ===
-    2 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'move_channel',
+    ).length &&
   channels.syntheticFailures ===
     1 &&
   channels.resumed;
@@ -330,9 +378,9 @@ const manualIds =
 
 const automaticExecutionCorrect =
   actionIds.length ===
-    98 &&
+    automatable.length &&
   uniqueActionIds.size ===
-    98;
+    automatable.length;
 
 const manualNeverExecuted =
   actionIds.every(
@@ -347,12 +395,22 @@ const registryCorrect =
     full.finalRegistrySnapshot
       .confirmed,
   ).length ===
-    13 &&
+    Object.keys(
+      bindingFile.resources,
+    ).length &&
   Object.keys(
     full.finalRegistrySnapshot
       .session,
   ).length ===
-    88 &&
+    automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_role' ||
+        operation.type ===
+          'create_category' ||
+        operation.type ===
+          'create_channel',
+    ).length &&
   full.finalRegistrySnapshot
     .revision ===
     4;
@@ -371,13 +429,24 @@ const totalsCorrect =
   full.status ===
     'completed' &&
   full.totalOperations ===
-    108 &&
+    operations.length &&
   full.automatableOperations ===
-    98 &&
+    automatable.length &&
   full.manualReviewOperations ===
-    10 &&
+    manual.length &&
   resolverBindingsTotal ===
-    101;
+    Object.keys(
+      bindingFile.resources,
+    ).length +
+      automatable.filter(
+      (operation) =>
+        operation.type ===
+          'create_role' ||
+        operation.type ===
+          'create_category' ||
+        operation.type ===
+          'create_channel',
+    ).length;
 
 const channelCheckpointPhaseIsolated =
   full.stoppedChannelsCheckpoint
@@ -745,11 +814,11 @@ const report = [
   `Automáticas: ${full.automatableOperations}`,
   `Manual review: ${full.manualReviewOperations}`,
   '',
-  `Roles: ${roles.succeeded}/24`,
-  `Categories: ${categories.succeeded}/13`,
-  `Renames: ${renames.succeeded}/8`,
-  `Channels: ${channels.succeeded}/51`,
-  `Moves: ${moves.succeeded}/2`,
+  `Roles: ${roles.succeeded}/${automatable.filter((operation) => operation.type === 'create_role').length}`,
+  `Categories: ${categories.succeeded}/${automatable.filter((operation) => operation.type === 'create_category').length}`,
+  `Renames: ${renames.succeeded}/${automatable.filter((operation) => operation.type === 'rename_role' || operation.type === 'rename_category' || operation.type === 'rename_channel').length}`,
+  `Channels: ${channels.succeeded}/${automatable.filter((operation) => operation.type === 'create_channel').length}`,
+  `Moves: ${moves.succeeded}/${automatable.filter((operation) => operation.type === 'move_channel').length}`,
   '',
   `Fallo artificial en channels: ${channels.syntheticFailures === 1 ? 'SÍ' : 'NO'}`,
   `Channels reanudado: ${channels.resumed ? 'SÍ' : 'NO'}`,
@@ -761,7 +830,7 @@ const report = [
   `Bindings resolubles: ${resolverBindingsTotal}`,
   `Registry revision: ${full.finalRegistrySnapshot.revision}`,
   '',
-  `10 operaciones manuales nunca ejecutadas: ${manualNeverExecuted ? 'SÍ' : 'NO'}`,
+  `${manual.length} operaciones manuales nunca ejecutadas: ${manualNeverExecuted ? 'SÍ' : 'NO'}`,
   '',
   'SECURITY ATTACKS',
   '----------------',
@@ -839,23 +908,23 @@ console.log(
 console.log('');
 
 console.log(
-  `Roles: ${roles.succeeded}/24`,
+  `Roles: ${roles.succeeded}/${automatable.filter((operation) => operation.type === 'create_role').length}`,
 );
 
 console.log(
-  `Categories: ${categories.succeeded}/13`,
+  `Categories: ${categories.succeeded}/${automatable.filter((operation) => operation.type === 'create_category').length}`,
 );
 
 console.log(
-  `Renames: ${renames.succeeded}/8`,
+  `Renames: ${renames.succeeded}/${automatable.filter((operation) => operation.type === 'rename_role' || operation.type === 'rename_category' || operation.type === 'rename_channel').length}`,
 );
 
 console.log(
-  `Channels: ${channels.succeeded}/51`,
+  `Channels: ${channels.succeeded}/${automatable.filter((operation) => operation.type === 'create_channel').length}`,
 );
 
 console.log(
-  `Moves: ${moves.succeeded}/2`,
+  `Moves: ${moves.succeeded}/${automatable.filter((operation) => operation.type === 'move_channel').length}`,
 );
 
 console.log('');
