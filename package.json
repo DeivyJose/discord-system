@@ -63,7 +63,9 @@
     "probe:discord-real-canary-disabled-live": "npm run probe:real-canary-disabled-live --workspace=@the-clock/discord",
     "test:discord-real-canary-composition": "npm run test:real-canary-composition --workspace=@the-clock/discord",
     "test:discord-real-canary-run-claim": "npm run test:real-canary-run-claim --workspace=@the-clock/discord",
-    "run:real-canary": "npm run run:real-canary --workspace=@the-clock/discord"
+    "run:real-canary": "npm run run:real-canary --workspace=@the-clock/discord",
+    "test:discord-post-canary-checkpoint": "npm run test:post-canary-checkpoint --workspace=@the-clock/discord",
+    "checkpoint:discord-post-canary": "npm run checkpoint:post-canary --workspace=@the-clock/discord"
   },
   "engines": {
     "node": ">=22.0.0",
